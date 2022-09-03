@@ -43,6 +43,7 @@ sudo apt install python2
 Switch it to default version.
 ```
 sudo update-alternatives --install /usr/bin/python python /usr/bin/python2 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 ```
 Now we good to go:
 ```
@@ -102,7 +103,7 @@ sudo apt-get install python3-pip python3-matplotlib python3-serial python3-openc
 sudo pip install pexpect
 ```
 ```
-git checkout Copter-4.2
+git checkout Copter-4.0
 git submodule update --init --recursive
 ```
 ```
@@ -161,10 +162,16 @@ sim_vehicle.py -v ArduCopter -f gazebo-iris --console
 
 Sources:
 
-https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_gazebo_arduplugin.md
+http://wiki.ros.org/noetic/Installation/Ubuntu
+
+Based upon [Intelligent Quads](https://github.com/Intelligent-Quads) series
+
+<!-- Exact tutorials
+
+https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_gazebo_arduplugin.md 
 
 https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/Installing_Ardupilot_20_04.md
 
-https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ros_20_04.md
+https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ros_20_04.md -->
 
 
