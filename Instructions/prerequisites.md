@@ -158,6 +158,62 @@ Terminal 2:
 cd ~/ardupilot/ArduCopter/
 sim_vehicle.py -v ArduCopter -f gazebo-iris --console
 ```
+## Mission Planner:
+Instal mono:
+```
+sudo apt install gnupg ca-certificates
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+sudo apt update
+sudo apt install mono-complete
+```
+---
+## Yolo libraries:
+```
+sudo apt install nvidia-cuda-toolkit
+```
+```
+cd ~/catkin_ws/src
+git clone https://github.com/kunaltyagi/darknet_ros.git
+cd darknet_ros
+git checkout opencv4
+git submodule update --init --recursive
+```
+Building:
+```
+catkin build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-8
+```
+**Quote**
+## Configure YOLO/Darknet
+
+in the file `ros.yaml` specifies ros parameters. You can find this file under `darknet_ros/darknet_ros/config`. You will need to change the image topic from `/camera/rgb/image_raw` to 
+
+```
+/webcam/image_raw
+```
+
+The file `darknet_ros.launch` will launch the darknet/yolo ros node. You can find this file under `darknet_ros/darknet_ros/launch`
+
+in this file you can choose which version of yolo you would like to run by changing 
+```
+<arg name="network_param_file"         default="$(find darknet_ros)/config/yolov2-tiny.yaml"/>
+```
+the options are as follows
+
+- yolov1: Not recommended. this model is old 
+- yolov2: more accurate, and faster. 
+- yolov3: about as fast as v2, but more accurate. Yolo v3 has a high GPU ram requirement to train and run. If your graphics card does not have enough ram, use yolo v2 
+- tiny-yolo: Very fast yolo model. Would recommend for application where speed is most important. Works very well on Nvidia Jetson
+
+**End of Quote**
+
+Lastly lets add
+``` 
+
+echo 'export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:~/catkin_ws/src/darknet_ros/darknet_ros' >> ~/.bashrc
+source ~/.bashrc
+```
+
 ---
 
 Sources:
@@ -172,6 +228,8 @@ https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ga
 
 https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/Installing_Ardupilot_20_04.md
 
-https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ros_20_04.md -->
+https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ros_20_04.md 
+
+https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/intro_to_yolo.md -->
 
 
