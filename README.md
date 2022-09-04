@@ -6,4 +6,4 @@ This repozitory contains all codes, documantations and simmulations for given go
 
 
 ## Contact:
-You can msg me via [github](http:https://github.com/printfKrzysztof).
+You can msg me via [github](https://github.com/printfKrzysztof).

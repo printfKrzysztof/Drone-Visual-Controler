@@ -221,7 +221,7 @@ sudo dpkg --configure -a
 ### Contact:
 Made by Krzysztof B as a part of BEng thesis.
 
-You can msg me via [github](http:https://github.com/printfKrzysztof).
+You can msg me via [github](https://github.com/printfKrzysztof).
 ### Sources:
 
 - http://wiki.ros.org/noetic/Installation/Ubuntu
