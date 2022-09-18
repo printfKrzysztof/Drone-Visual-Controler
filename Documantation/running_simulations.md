@@ -29,8 +29,7 @@ cd ./tree_seeker
 ## Running simulation:
 In terminal 1:
 ```
-cd MissionPlanner-latest/
-mono MissionPlanner.exe
+roslaunch mission_commander trees_sim.launch
 ```
 In terminal 2:
 ```
@@ -42,9 +41,14 @@ In terminal 3:
 ```
 In terminal 4:
 ```
-roslaunch mission_commander trees_sim.launch
+cd MissionPlanner-latest/
+mono MissionPlanner.exe
 ```
+<!-- 
 In terminal 5:
 ```
 roslaunch mavros apm.launch fcu_url:=udp://127.0.0.1:14551@14555
-```
+``` 
+-->
+
+Then just take off and thats all
