@@ -1,0 +1,29 @@
+3color:
+  #   points
+  pointALo: 16.242506
+  pointALa: 52.238343
+  pointBLo: 16.241844
+  pointBLa: 52.236878
+  pointCLo: 16.238118
+  pointCLa: 52.237547
+  pointDLo: 16.238847
+  pointDLa: 52.238991
+
+  numberOfPaths: 12
+
+  #   altitudes
+  lowFlyAlt: 10.0     # [m]
+  flyAlt: 30.0        # [m]
+  closeLookAlt: 5.0   # [m]
+  #  conversions
+  #  aslToWGS83: -33.5  # Łódź
+  aslToWGS83: -37.0  # Kąkolewo
+  #  aslToWGS83: -10.0   # Simulation Gazebo
+
+  #   Accuracy
+  waypointPositionAccuracy: 0.8   # [m]
+
+  #   figure area
+  figureSize1: 40.0 # fotoftoroza
+  figureSize2: 60.0 # mączniak rzekomy
+  figureSize3: 70.0 # mączniak prawdziwy

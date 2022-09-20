@@ -1,12 +1,21 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(dvc)
+project(mission_commander)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  mavros_msgs
   roscpp
-  mavros
   std_msgs
-  darknet_ros
-  iq_sim
+  trajectory_planer_msgs
+  ball_droper_msgs
+  cv_bridge
+  rospy
+  sensor_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,7 +54,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#         message1.msg
+#   Message1.msg
+#   Message2.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -65,7 +75,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   mavros_msgs#   std_msgs#   trajectory_planer_msgs
 # )
 
 ################################################
@@ -98,10 +108,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES tree_seeker
-  CATKIN_DEPENDS roscpp mavros std_msgs
-  #DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES mission_commander
+#  CATKIN_DEPENDS mavros_msgs roscpp std_msgs trajectory_planer_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -117,7 +127,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tree_seeker.cpp
+#   src/${PROJECT_NAME}/mission_commander.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -128,7 +138,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tree_seeker_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/mission_commander_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,10 +164,14 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+ catkin_install_python(PROGRAMS
+         scripts/image_saver_node.py
+         scripts/test.py
+         scripts/insert_data_to_db_trees.py
+         scripts/insert_data_to_db_colors.py
+         #   scripts/my_python_script
+   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
@@ -192,7 +206,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tree_seeker.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_mission_commander.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -200,38 +214,8 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(square src/square.cpp)
-target_link_libraries(square ${catkin_LIBRARIES})
+add_executable(mission_commander_trees src/mission_commander_trees.cpp include/mission_commander_trees_functions.cpp)
+target_link_libraries(mission_commander_trees ${catkin_LIBRARIES})
 
-add_executable(circle src/circle.cpp)
-target_link_libraries(circle ${catkin_LIBRARIES})
-
-add_executable(randomly src/randomly.cpp)
-target_link_libraries(randomly ${catkin_LIBRARIES})
-
-add_executable(subscriber src/subscriber.cpp)
-target_link_libraries(subscriber ${catkin_LIBRARIES})
-
-add_executable(sub2 src/sub2.cpp)
-target_link_libraries(sub2 ${catkin_LIBRARIES})
-
-add_executable(drone_ridder src/drone_ridder.cpp include/drone_ridder_functions.cpp)
-target_link_libraries(drone_ridder ${catkin_LIBRARIES})
-
-add_executable(test_DR_square src/test_DR_square.cpp)
-target_link_libraries(test_DR_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_square src/test_set_global_position_square.cpp)
-target_link_libraries(test_set_global_position_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_still src/test_set_global_position_still.cpp)
-target_link_libraries(test_set_global_position_still ${catkin_LIBRARIES})
-
-add_executable(test_set_local_position src/test_set_local_position.cpp)
-target_link_libraries(test_set_local_position ${catkin_LIBRARIES})
-
-add_executable(test_set_position_offset src/test_set_position_offset.cpp)
-target_link_libraries(test_set_position_offset ${catkin_LIBRARIES})
-
-add_executable(test_set_heading src/test_set_heading.cpp)
-target_link_libraries(test_set_heading ${catkin_LIBRARIES})
+add_executable(mission_commander_3color src/mission_commander_3colors.cpp include/mission_commander_3colors_functions.cpp)
+target_link_libraries(mission_commander_3color ${catkin_LIBRARIES})

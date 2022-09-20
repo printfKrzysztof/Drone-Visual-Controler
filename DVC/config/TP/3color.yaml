@@ -1,0 +1,4 @@
+trajectory_planer:
+  idToGo1: 1    # fotoftoroza
+  idToGo2: 2    # mączniak rzekomy
+  idToGo3: 3    # mączniak prawdziwy

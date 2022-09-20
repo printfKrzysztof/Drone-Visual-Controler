@@ -1,0 +1,21 @@
+trees:
+#   start points WGS83
+  startPointLongitude: 149.164799
+  startPointLatitude: -35.3631731
+  endPointLongitude: 149.1647965
+  endPointLatitude: -35.3624567
+  startEndAlt: 633.0
+#
+#   altitudes
+  dropBallAlt: 5.0    # [m]
+  lowFlyAlt: 10.0     # [m]
+  flyAlt: 30.0        # [m]
+#
+#  conversions
+#  aslToWGS83: -33.5  # Łódź
+#  aslToWGS83: -37.0  # Kąkolewo
+  aslToWGS83: -19.6   # Simulation Gazebo
+#
+#   Accuracy
+  dropWaypointAccuracy: 0.5       # [m]
+  waypointPositionAccuracy: 0.8   # [m]

@@ -1,0 +1,30 @@
+<!-- DRONE VISUAL CONTROLLER    -->
+<!-- KRZYSZTOF BORTNOWSKI       -->
+<!-- Launchfile that inclueds all nodes and params needed for DVC project -->
+<launch>
+
+    <!-- MISSION_COMMANDER -->
+    <rosparam command="load" file="$(find mission_commander)/config/trees_sim.yaml" />
+    <node pkg="mission_commander" type="mission_commander_trees" name="mission_commander_trees" output="screen" />
+    <node pkg="mission_commander" type="image_saver_node.py" name="image_saver" output="screen" />
+    <node pkg="mission_commander" type="test.py" name="sub_gps" output="screen" />
+
+    <!-- NODE DRONE RIDDER -->
+    <node pkg="drone_ridder" type="drone_ridder" name="drone_ridder" output="screen" />
+
+    <!-- GLOBAL LOCALIZATOR -->
+    <rosparam command="load" file="$(find object_global_localizator)/config/object_localizator_sim.yaml"/>
+    <node pkg="object_global_localizator" type="object_global_localizator" name="object_global_localizator" output="screen"/>
+
+    <!-- TRAJECTORY PLANER -->
+    <rosparam command="load" file="$(find trajectory_planer)/config/trees.yaml" />
+    <node pkg="trajectory_planer" type="trajectory_planer" name="trajectory_planer" output="screen" />
+
+    <!-- SIMULATOR BY IQ -->
+    <include file="$(find iq_sim)/launch/apm.launch"/>
+    <include file="$(find iq_sim)/launch/runway3.launch"/>
+
+    <!-- YOLO BY DARKNET -->
+    <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+
+</launch>
