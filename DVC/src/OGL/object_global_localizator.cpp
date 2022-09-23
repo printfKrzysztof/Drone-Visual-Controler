@@ -1,4 +1,4 @@
-#include <object_global_localizator.h>
+#include <OGL/object_global_localizator.h>
 
 
 unsigned int errorCounter = 0;

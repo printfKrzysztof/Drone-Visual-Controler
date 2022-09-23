@@ -1,4 +1,4 @@
-#include <TreeObejctPosition.h>
+#include <TP/TreeObejctPosition.h>
 
 
 TreeObejctPosition::TreeObejctPosition(unsigned short id, Point sum, double radius, double num) : id(id), sum(sum),  radius(radius), num(num), visited(0), updateCounter(0) {

@@ -23,7 +23,6 @@ include_directories(
 )
 
 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 
 add_executable(object_global_localizator src/object_global_localizator.cpp include/object_global_localizator_functions.cpp)
 target_link_libraries(object_global_localizator ${catkin_LIBRARIES})

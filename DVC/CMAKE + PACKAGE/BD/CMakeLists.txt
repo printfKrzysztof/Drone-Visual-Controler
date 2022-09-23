@@ -1,23 +1,17 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(dvc)
+project(ball_droper)
 
+## Compile as C++11, supported in ROS Kinetic and newer
+# add_compile_options(-std=c++11)
+
+## Find catkin macros and libraries
+## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
+## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  mavros
-  std_msgs
-  darknet_ros
-  darknet_ros_msgs
-  iq_sim
   mavros_msgs
-  trajectory_planer_msgs
-  ball_droper_msgs
-  cv_bridge
-  rospy
-  sensor_msgs
-  geometry_msgs
+  roscpp
   std_msgs
-  message_generation
-  object_global_localizator_msgs
+  ball_droper_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -54,20 +48,18 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-  FILES
-  ObjectGlobalPosition.msg
-  ObjectsGlobalPositions.msg
-  TrajectoryPlaner.msg
-  SimpleTree.msg
- )
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  drop_ball.srv
-  treeTable.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -77,12 +69,11 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-  
-)
+# generate_messages(
+#   DEPENDENCIES
+#   mavros_msgs
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -114,10 +105,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include/DR include/MC  include/OGL include/TP  include
-  LIBRARIES tree_seeker
-  CATKIN_DEPENDS roscpp mavros std_msgs geometry_msgs std_msgs message_runtime
-  #DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES ball_droper
+#  CATKIN_DEPENDS mavros_msgs roscpp std_msgs
+#  DEPENDS system_lib
 )
 
 ###########
@@ -127,13 +118,13 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
- include
+# include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/tree_seeker.cpp
+#   src/${PROJECT_NAME}/ball_droper.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -144,7 +135,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/tree_seeker_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/ball_droper_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -170,13 +161,10 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-catkin_install_python(PROGRAMS
-         scripts/MC/image_saver_node.py
-         scripts/MC/test.py
-         scripts/MC/insert_data_to_db_trees.py
-         scripts/MC/insert_data_to_db_colors.py
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+# catkin_install_python(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
@@ -193,7 +181,7 @@ catkin_install_python(PROGRAMS
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY /${PROJECT_NAME}/
+# install(DIRECTORY include/${PROJECT_NAME}/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   FILES_MATCHING PATTERN "*.h"
 #   PATTERN ".svn" EXCLUDE
@@ -211,61 +199,12 @@ catkin_install_python(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_tree_seeker.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ball_droper.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(square src/DR/square.cpp)
-target_link_libraries(square ${catkin_LIBRARIES})
-
-add_executable(circle src/DR/circle.cpp)
-target_link_libraries(circle ${catkin_LIBRARIES})
-
-add_executable(randomly src/DR/randomly.cpp)
-target_link_libraries(randomly ${catkin_LIBRARIES})
-
-add_executable(subscriber src/DR/subscriber.cpp)
-target_link_libraries(subscriber ${catkin_LIBRARIES})
-
-add_executable(sub2 src/DR/sub2.cpp)
-target_link_libraries(sub2 ${catkin_LIBRARIES})
-
-add_executable(drone_ridder src/DR/drone_ridder.cpp include/DR/drone_ridder_functions.cpp)
-target_link_libraries(drone_ridder ${catkin_LIBRARIES})
-
-add_executable(test_DR_square src/DR/test_DR_square.cpp)
-target_link_libraries(test_DR_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_square src/DR/test_set_global_position_square.cpp)
-target_link_libraries(test_set_global_position_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_still src/DR/test_set_global_position_still.cpp)
-target_link_libraries(test_set_global_position_still ${catkin_LIBRARIES})
-
-add_executable(test_set_local_position src/DR/test_set_local_position.cpp)
-target_link_libraries(test_set_local_position ${catkin_LIBRARIES})
-
-add_executable(test_set_position_offset src/DR/test_set_position_offset.cpp)
-target_link_libraries(test_set_position_offset ${catkin_LIBRARIES})
-
-add_executable(test_set_heading src/DR/test_set_heading.cpp)
-target_link_libraries(test_set_heading ${catkin_LIBRARIES})
-
-add_executable(ball_droper src/BD/ball_droper.cpp)
+add_executable(ball_droper src/ball_droper.cpp)
 target_link_libraries(ball_droper ${catkin_LIBRARIES})
-
-add_executable(mission_commander_trees src/MC/mission_commander_trees.cpp include/MC/mission_commander_trees_functions.cpp)
-target_link_libraries(mission_commander_trees ${catkin_LIBRARIES})
-
-add_executable(mission_commander_3color src/MC/mission_commander_3colors.cpp include/MC/mission_commander_3colors_functions.cpp)
-target_link_libraries(mission_commander_3color ${catkin_LIBRARIES})
-
-add_executable(object_global_localizator src/OGL/object_global_localizator.cpp include/OGL/object_global_localizator_functions.cpp)
-target_link_libraries(object_global_localizator ${catkin_LIBRARIES})
-
-add_executable(trajectory_planer src/TP/trajectory_planer.cpp include/TP/trajectory_planer_functions.cpp include/TP/TreeObejctPosition.cpp)
-target_link_libraries(trajectory_planer ${catkin_LIBRARIES})

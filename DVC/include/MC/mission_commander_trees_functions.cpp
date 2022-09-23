@@ -2,7 +2,7 @@
 // Created by maciek on 22.05.2021.
 //
 
-#include "mission_commander_trees.h"
+#include "MC/mission_commander_trees.h"
 
 sensor_msgs::NavSatFix global_position;
 nav_msgs::Odometry local_position;

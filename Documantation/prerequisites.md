@@ -81,7 +81,7 @@ Resorce again
 ```
 echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 source ~/.bashrc
-sudo ~/catkin_ws/src/mavros/mavros/scripts/install_geographiclib_datasets.sh
+sudo ~/catkin_try/src/mavros/mavros/scripts/install_geographiclib_datasets.sh
 ```
 Get the example file to check if it works!
 ```
