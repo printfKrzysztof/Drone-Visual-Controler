@@ -9,8 +9,8 @@
 #include <std_msgs/Int8.h>
 #include <std_msgs/Float64.h>
 #include <darknet_ros_msgs/BoundingBoxes.h>
-#include <object_global_localizator_msgs/ObjectGlobalPosition.h>
-#include <object_global_localizator_msgs/ObjectsGlobalPositions.h>
+#include <dvc_msgs/ObjectGlobalPosition.h>
+#include <dvc_msgs/ObjectsGlobalPositions.h>
 #include <cmath>
 
 #define CAMERA_X_MAX 1920
