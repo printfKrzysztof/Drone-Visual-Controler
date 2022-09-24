@@ -9,15 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
   darknet_ros_msgs
   iq_sim
   mavros_msgs
-  trajectory_planer_msgs
-  ball_droper_msgs
   cv_bridge
   rospy
   sensor_msgs
   geometry_msgs
   std_msgs
   message_generation
-  object_global_localizator_msgs
 )
 
 ## System dependencies are found with CMake's conventions
