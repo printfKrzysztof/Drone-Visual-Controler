@@ -2,10 +2,8 @@
 
 Lets base our example roslaunch upon [TreeSeeker](https://github.com/Pigwomaniak/tree_seeker) from [Pigwomaniak](https://github.com/Pigwomaniak) and [tom1322s](https://github.com/tom1322s) inspired by [Inteligent Quads](https://github.com/Intelligent-Quads)
 
-  [Running roslaunch files (simulation and programs at once)](#running-roslaunch-files-simulation-and-programs-at-once)
-  - [Prerequisites](#prerequisites)
-  - [Dependencies (empty worksapce)](#dependencies-empty-worksapce)
-  - [Running simulation:](#running-simulation)
+  
+
 ## Prerequisites
 
 All prerequisites are stored in [this file](prerequisites.md).
@@ -76,3 +74,28 @@ cd ~/catkin_ws/src
 git clone https://github.com/printfKrzysztof/Drone-Visual-Controler.git
 catkin build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-8
 ```
+
+## Running program and simulation
+
+To run program you type in unused terminal:
+
+```
+roslaunch dvc dronevisualsim.launch
+
+```
+
+In other terminal no. 2 type:
+
+```
+./startsitl.sh
+
+```
+In last terminal no. 3 type:
+
+```
+cd MissionPlanner-latest/
+mono MissionPlanner.exe
+
+```
+The last one is not needed but can help you 
+
