@@ -52,7 +52,7 @@ void setup_camera_rotation(double pitch){
 }
 
 void init_publisher(ros::NodeHandle controlNode){
-    object_global_position_pub = controlNode.advertise<object_global_localizator_msgs::ObjectsGlobalPositions>("/object_global_localizator", 1);
+    object_global_position_pub = controlNode.advertise<dvc_msgs::ObjectsGlobalPositions>("/object_global_localizator", 1);
 //    object_area_pub = controlNode.advertise<std_msgs::Float64>("/object_area", 1);
 }
 
@@ -64,10 +64,10 @@ void localizeObjects(ros::NodeHandle controlNode){
     controlNode.getParam("/object_global_localizator/cameraYMax", cameraYMax);
     controlNode.getParam("/object_global_localizator/cameraXAngle", cameraXAngle);
     controlNode.getParam("/object_global_localizator/cameraYAngle", cameraYAngle);
-    object_global_localizator_msgs::ObjectsGlobalPositions outMessage;
+    dvc_msgs::ObjectsGlobalPositions outMessage;
     std_msgs::Float64 outArea;
     for (const auto & bounding_boxe : boundingBoxes.bounding_boxes) {
-        object_global_localizator_msgs::ObjectGlobalPosition objectGlobalPosition;
+        dvc_msgs::ObjectGlobalPosition objectGlobalPosition;
         objectGlobalPosition.classObject = bounding_boxe.Class;
         objectGlobalPosition.idClassObject = bounding_boxe.id;
         objectGlobalPosition.probabilityObject = bounding_boxe.probability;

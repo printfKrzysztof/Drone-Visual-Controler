@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include <ball_droper_msgs/drop_ball.h>
+#include <dvc_msgs/drop_ball.h>
 #include <mavros_msgs/OverrideRCIn.h>
 
 #define DROP_A 1
@@ -12,7 +12,7 @@
 
 int ball_to_drop = NOTHING_TO_DROP;
 
-bool ball_drop_cb(ball_droper_msgs::drop_ball::Request& req, ball_droper_msgs::drop_ball::Response& res){
+bool ball_drop_cb(dvc_msgs::drop_ball::Request& req, dvc_msgs::drop_ball::Response& res){
     if(req.ball_to_drop == "A"){
         ROS_INFO("Drop A");
         ball_to_drop = DROP_A;

@@ -6,7 +6,7 @@
 #define MODE 0
 // 0 for localmode 1 for gps mode
 
-object_global_localizator_msgs::ObjectsGlobalPositions objGlobPos;
+dvc_msgs::ObjectsGlobalPositions objGlobPos;
 bool readFlag;
 
 std::vector<TreeObejctPosition> treePosVec;
@@ -22,12 +22,12 @@ nav_msgs::Odometry local_position;
 
 ros::Publisher goal_pos_pub;
 
-trajectory_planer_msgs::TrajectoryPlaner achievePos;
+dvc_msgs::TrajectoryPlaner achievePos;
 bool readAchievePos;
 
 
 
-void new_Point_cb(const object_global_localizator_msgs::ObjectsGlobalPositions::ConstPtr& msg){
+void new_Point_cb(const dvc_msgs::ObjectsGlobalPositions::ConstPtr& msg){
     objGlobPos = *msg;
     readFlag = true;
     //ROS_INFO("global pos read");
@@ -43,20 +43,20 @@ void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg){
     //ROS_INFO("local pos read");
 }
 
-void achieve_point_cb(const trajectory_planer_msgs::TrajectoryPlaner::ConstPtr& msg){
+void achieve_point_cb(const dvc_msgs::TrajectoryPlaner::ConstPtr& msg){
     achievePos = *msg;
     readAchievePos = true;
     //ROS_INFO("local pos read");
 }
 
 
-bool tree_table_cb(trajectory_planer_msgs::treeTable::Request& req, trajectory_planer_msgs::treeTable::Response& res)
+bool tree_table_cb(dvc_msgs::treeTable::Request& req, dvc_msgs::treeTable::Response& res)
 {
     if(req.sendResponse == true)
     {
         for(const auto& treePos:treePosVec)
         {
-            trajectory_planer_msgs::SimpleTree tree;
+            dvc_msgs::SimpleTree tree;
 
             tree.idClassObject = treePos.getId();
             tree.updateCounter = treePos.getUpdateCounter();
@@ -261,14 +261,14 @@ void findLoverCost (const std::vector<Point>& points, std::vector<size_t>& v, do
 }
 
 void init_publisher(ros::NodeHandle controlNode){
-    goal_pos_pub = controlNode.advertise<trajectory_planer_msgs::TrajectoryPlaner>("/trajectory_planer/next_waypoint", 1);
+    goal_pos_pub = controlNode.advertise<dvc_msgs::TrajectoryPlaner>("/trajectory_planer/next_waypoint", 1);
 }
 
 void sendOutMessage()
 {
     //jesli jest ustawiona flaga do wysania wiadomosci
     if(goolFlag) {
-        trajectory_planer_msgs::TrajectoryPlaner outMessage; //stworz wiadomosc
+        dvc_msgs::TrajectoryPlaner outMessage; //stworz wiadomosc
 
 #if MODE == 0 // jesli mode jest jako lokal
         outMessage.mode = "local"; // przypisz wartosc mode jako lokalna
@@ -288,7 +288,7 @@ void sendOutMessage()
 
         goal_pos_pub.publish(outMessage); //publikuj wiadomosc
     } else{
-        trajectory_planer_msgs::TrajectoryPlaner outMessage; //stworz wiadomosc
+        dvc_msgs::TrajectoryPlaner outMessage; //stworz wiadomosc
         outMessage.mode = "empty"; // przypisz wartosc mode jako pusty
         goal_pos_pub.publish(outMessage); // publikuj wiadomosc
     }

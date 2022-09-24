@@ -6,7 +6,7 @@
 
 sensor_msgs::NavSatFix global_position;
 nav_msgs::Odometry local_position;
-trajectory_planer_msgs::TrajectoryPlaner waypointToTree;
+dvc_msgs::TrajectoryPlaner waypointToTree;
 mavros_msgs::State mavState;
 mavros_msgs::ExtendedState extendedMavState;
 sensor_msgs::Image yoloImage;
@@ -40,7 +40,7 @@ void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg){
     local_position = *msg;
 }
 
-void trajectory_planer_cb(const trajectory_planer_msgs::TrajectoryPlaner::ConstPtr& msg){
+void trajectory_planer_cb(const dvc_msgs::TrajectoryPlaner::ConstPtr& msg){
     waypointToTree = *msg;
 }
 void mav_state_cb(const mavros_msgs::State::ConstPtr& msg){
@@ -62,7 +62,7 @@ void init_publisher_subscriber(ros::NodeHandle controlNode){
     set_offset_pub = controlNode.advertise<geometry_msgs::Point>("/drone_ridder/set_position_offset", 1);
     set_mode_pub = controlNode.advertise<std_msgs::String>("/drone_ridder/set_mode", 1);
     set_global_pos_pub = controlNode.advertise<geographic_msgs::GeoPoseStamped>("/drone_ridder/set_global_position", 1);
-    waypoint_reach_pub = controlNode.advertise<trajectory_planer_msgs::TrajectoryPlaner>("/trajectory_planer/waypoint_reach", 1);
+    waypoint_reach_pub = controlNode.advertise<dvc_msgs::TrajectoryPlaner>("/trajectory_planer/waypoint_reach", 1);
     founded_object_pub = controlNode.advertise<std_msgs::String>("/mission_commander/founded_object", 1);
     mission_start_pub = controlNode.advertise<std_msgs::String>("/mission_commander/mission_start", 1);
 
@@ -74,7 +74,7 @@ void init_publisher_subscriber(ros::NodeHandle controlNode){
     extended_mav_state_sub = controlNode.subscribe("/mavros/extended_state", 1, ext_mav_state_cb);
     yolo_Photo_sub = controlNode.subscribe("/darknet_ros/detection_image", 1, yolo_photo_cb);
     // Services
-    ball_droper_client = controlNode.serviceClient<ball_droper_msgs::drop_ball>("drop_ball");
+    ball_droper_client = controlNode.serviceClient<dvc_msgs::drop_ball>("drop_ball");
 }
 
 MissionState startMission(sensor_msgs::NavSatFix* takeOffPointWGS84, nav_msgs::Odometry* takeOffPoint){
@@ -238,7 +238,7 @@ MissionState dropBall(const ros::NodeHandle& controlNode){
     controlNode.getParam("/trees/dropBallAlt", dropBallAlt);
     controlNode.getParam("/trees/dropWaypointAccuracy", dropWaypointAccuracy);
     controlNode.getParam("/trees/aslToWGS83", aslToWGS83);
-    trajectory_planer_msgs::TrajectoryPlaner waypointToTreeOld = waypointToTree;
+    dvc_msgs::TrajectoryPlaner waypointToTreeOld = waypointToTree;
     geometry_msgs::Point waypoint;
     waypoint.x = waypointToTree.pos1;
     waypoint.y = waypointToTree.pos2;
@@ -252,7 +252,7 @@ MissionState dropBall(const ros::NodeHandle& controlNode){
             waypoint_reach_pub.publish(waypointToTreeOld);
             return MissionState::goToNextTree;
         }
-        ball_droper_msgs::drop_ball ball_srv;
+        dvc_msgs::drop_ball ball_srv;
         ros::Duration(2).sleep();
         std_msgs::String founded_object_msg;
         if(waypointToTree.idClassObject == 2){

@@ -4,7 +4,7 @@
 #pragma once
 
 #include <ros/ros.h>
-#include <trajectory_planer_msgs/TrajectoryPlaner.h>
+#include <dvc_msgs/TrajectoryPlaner.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/Float64.h>
@@ -35,7 +35,7 @@ enum class MissionState{
 
 void global_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg);
 void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg);
-void trajectory_planer_cb(const trajectory_planer_msgs::TrajectoryPlaner::ConstPtr& msg);
+void trajectory_planer_cb(const dvc_msgs::TrajectoryPlaner::ConstPtr& msg);
 void mav_state_cb(const mavros_msgs::State::ConstPtr& msg);
 void init_publisher_subscriber(ros::NodeHandle controlNode);
 

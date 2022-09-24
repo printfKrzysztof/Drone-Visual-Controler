@@ -6,11 +6,11 @@
 #include <nav_msgs/Odometry.h>
 //#include <std_msgs/Int8.h>
 
-#include <object_global_localizator_msgs/ObjectGlobalPosition.h>
-#include <object_global_localizator_msgs/ObjectsGlobalPositions.h>
-#include <trajectory_planer_msgs/TrajectoryPlaner.h>
-#include <trajectory_planer_msgs/SimpleTree.h>
-#include <trajectory_planer_msgs/treeTable.h>
+#include <dvc_msgs/ObjectGlobalPosition.h>
+#include <dvc_msgs/ObjectsGlobalPositions.h>
+#include <dvc_msgs/TrajectoryPlaner.h>
+#include <dvc_msgs/SimpleTree.h>
+#include <dvc_msgs/treeTable.h>
 #include <cmath>
 #include <TP/TreeObejctPosition.h>
 #include <vector>
@@ -18,11 +18,11 @@
 
 
 void init_publisher(ros::NodeHandle controlNode);
-void new_Point_cb(const object_global_localizator_msgs::ObjectsGlobalPositions::ConstPtr& msg);
+void new_Point_cb(const dvc_msgs::ObjectsGlobalPositions::ConstPtr& msg);
 void global_pos_cb(const sensor_msgs::NavSatFix::ConstPtr& msg);
 void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg);
-void achieve_point_cb(const trajectory_planer_msgs::TrajectoryPlaner::ConstPtr& msg);
-bool tree_table_cb(trajectory_planer_msgs::treeTable::Request& req, trajectory_planer_msgs::treeTable::Response& res);
+void achieve_point_cb(const dvc_msgs::TrajectoryPlaner::ConstPtr& msg);
+bool tree_table_cb(dvc_msgs::treeTable::Request& req, dvc_msgs::treeTable::Response& res);
 void resetReadFlag();
 bool checkReadFlag();
 void processReadPoints();

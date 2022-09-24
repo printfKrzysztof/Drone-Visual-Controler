@@ -6,7 +6,7 @@
 
 sensor_msgs::NavSatFix global_position;
 nav_msgs::Odometry local_position;
-trajectory_planer_msgs::TrajectoryPlaner waypointToTree;
+dvc_msgs::TrajectoryPlaner waypointToTree;
 mavros_msgs::State mavState;
 mavros_msgs::ExtendedState extendedMavState;
 sensor_msgs::Image yoloImage;
@@ -40,7 +40,7 @@ void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg){
     local_position = *msg;
 }
 
-void trajectory_planer_cb(const trajectory_planer_msgs::TrajectoryPlaner::ConstPtr& msg){
+void trajectory_planer_cb(const dvc_msgs::TrajectoryPlaner::ConstPtr& msg){
     waypointToTree = *msg;
 }
 void mav_state_cb(const mavros_msgs::State::ConstPtr& msg){
@@ -63,7 +63,7 @@ void init_publisher_subscriber(ros::NodeHandle controlNode){
     set_offset_pub = controlNode.advertise<geometry_msgs::Point>("/drone_ridder/set_position_offset", 1);
     set_mode_pub = controlNode.advertise<std_msgs::String>("/drone_ridder/set_mode", 1);
     set_global_pos_pub = controlNode.advertise<geographic_msgs::GeoPoseStamped>("/drone_ridder/set_global_position", 1);
-    waypoint_reach_pub = controlNode.advertise<trajectory_planer_msgs::TrajectoryPlaner>("/trajectory_planer/waypoint_reach", 1);
+    waypoint_reach_pub = controlNode.advertise<dvc_msgs::TrajectoryPlaner>("/trajectory_planer/waypoint_reach", 1);
     //Subscribers
     global_pose_sub = controlNode.subscribe("/mavros/global_position/global", 1, global_pos_cb);
     local_pose_sub = controlNode.subscribe("/mavros/global_position/local", 1, local_pos_cb);
@@ -164,7 +164,7 @@ MissionState takeCloseLook(ros::NodeHandle controlNode){
     if(pointDistance(waypoint) > waypointPositionAccuracy) {
         return MissionState::takeCloseLook;
     } else {
-        trajectory_planer_msgs::TrajectoryPlaner waypointToTreeOld = waypointToTree;
+        dvc_msgs::TrajectoryPlaner waypointToTreeOld = waypointToTree;
         needPhoto = true;
         ros::spinOnce();
         ros::Duration(3).sleep();

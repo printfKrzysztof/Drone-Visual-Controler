@@ -5,7 +5,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   mavros
   std_msgs
-  darknet_ros
   darknet_ros_msgs
   iq_sim
   mavros_msgs
