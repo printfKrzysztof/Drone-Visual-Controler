@@ -11,7 +11,7 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import Image, PointCloud2, NavSatFix, NavSatStatus, CameraInfo
 from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from std_msgs.msg import Header, String
-from trajectory_planer_msgs.msg import TrajectoryPlaner
+from dvc_msgs.msg import TrajectoryPlaner
 import tf
 # Credentials will be sent to you by e-mail
 USER = 'team_491'

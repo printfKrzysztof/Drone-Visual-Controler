@@ -3,5 +3,6 @@
         "deque": "cpp",
         "string": "cpp",
         "vector": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "${workspaceFolder}/DVC"
 }
