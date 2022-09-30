@@ -6,6 +6,14 @@
 			"label": "Catkin",
 			"command": "catkin build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-8",
 			"group": "build"
+		},
+		{
+			"type": "shell",
+			"label": "launch",
+			"group": "none",
+			"command": ["gnome-terminal --geometry=73x16+0+0 --window ",
+			"--working-directory=~ --title='DVC' --command=\"roslaunch dvc dronevisualsim.launch\" && ",
+			" gnome-terminal --tab -e  ~/startsitl.sh"]
 		}
 	]
 }

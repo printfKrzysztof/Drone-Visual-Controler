@@ -81,21 +81,17 @@ To run program you type in unused terminal:
 
 ```
 roslaunch dvc dronevisualsim.launch
-
 ```
 
 In other terminal no. 2 type:
-
 ```
 ./startsitl.sh
-
 ```
 In last terminal no. 3 type:
 
 ```
 cd MissionPlanner-latest/
 mono MissionPlanner.exe
-
 ```
 The last one is not needed but can help you 
 

@@ -1,16 +1,17 @@
 # All steps needed to run my visual controller on Ubuntu 20.04:
 
-  [All steps needed to run my visual controller on Ubuntu 20.04:](#all-steps-needed-to-run-my-visual-controller-on-ubuntu-2004)
-  - [Installing ROS:](#installing-ros)
+## Table of contents
+  - [Installing ROS](#installing-ros)
   - [Ardupilot with MAVProxy](#ardupilot-with-mavproxy)
-  - [Gazebo:](#gazebo)
-  - [Mission Planner:](#mission-planner)
-  - [Yolo libraries:](#yolo-libraries)
-  - [Other usefull commands:](#other-usefull-commands)
-    - [Contact:](#contact)
-    - [Sources:](#sources)
-  
-
+  - [Gazebo](#gazebo)
+  - [Mission Planner](#mission-planner)
+  - [Yolo libraries](#yolo-libraries)
+  - [More informations](#more-informations)
+    - [Other usefull commands](#other-usefull-commands)
+    - [Contact](#contact)
+    - [Direct Sources](#direct-sources)
+    - [Based upon Intelligent Quads series](#based-upon-intelligent-quads-series)
+___
 ## Installing ROS:
 Lets start with getting packages.
 ```
@@ -220,21 +221,21 @@ Lastly lets add
 echo 'export ROS_PACKAGE_PATH=${ROS_PACKAGE_PATH}:~/catkin_ws/src/darknet_ros/darknet_ros' >> ~/.bashrc
 source ~/.bashrc
 ```
+
 ---
-## Other usefull commands:
+## More informations:
+
+### Other usefull commands:
 
 low framerate:
 ```
 sudo dpkg --configure -a
 ```
-
----
-
 ### Contact:
-Made by Krzysztof B as a part of BEng thesis.
 
-You can msg me via [github](https://github.com/printfKrzysztof).
-### Sources:
+- Made by Krzysztof B as a part of BEng thesis.
+- You can msg me via [github](https://github.com/printfKrzysztof).
+### Direct Sources:
 
 - http://wiki.ros.org/noetic/Installation/Ubuntu
 - https://pjreddie.com/darknet/yolo/
@@ -243,7 +244,7 @@ You can msg me via [github](https://github.com/printfKrzysztof).
 - https://classic.gazebosim.org/download
 - https://ardupilot.org/mavproxy/
 
-Based upon [Intelligent Quads](https://github.com/Intelligent-Quads) series:
+### Based upon [Intelligent Quads](https://github.com/Intelligent-Quads) series:
 
 
 - https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_gazebo_arduplugin.md 
