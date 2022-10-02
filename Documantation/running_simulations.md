@@ -85,13 +85,22 @@ roslaunch dvc dronevisualsim.launch
 
 In other terminal no. 2 type:
 ```
-./startsitl.sh
+./startpray.sh
 ```
-In last terminal no. 3 type:
+
+In other terminal no. 3 type:
+```
+./startdrone.sh
+```
+
+**If you use VS CODE you can use Tasks added by me**
+
+
+You can also use mission commander if you want:
 
 ```
 cd MissionPlanner-latest/
 mono MissionPlanner.exe
 ```
-The last one is not needed but can help you 
+
 
