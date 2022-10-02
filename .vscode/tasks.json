@@ -11,9 +11,19 @@
 			"type": "shell",
 			"label": "launch",
 			"group": "none",
-			"command": ["gnome-terminal --geometry=73x16+0+0 --window ",
-			"--working-directory=~ --title='DVC' --command=\"roslaunch dvc dronevisualsim.launch\" && ",
-			" gnome-terminal --tab -e  ~/startsitl.sh"]
+			"command": "gnome-terminal --window -- roslaunch dvc dronevisualsim.launch  "
+		},
+		{
+			"type": "shell",
+			"label": "drone",
+			"group": "none",
+			"command": "./startdrone.sh"
+		},
+		{
+			"type": "shell",
+			"label": "prey",
+			"group": "none",
+			"command": "./startprey.sh"
 		}
 	]
 }

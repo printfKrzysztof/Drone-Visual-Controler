@@ -248,3 +248,6 @@ target_link_libraries(object_global_localizator ${catkin_LIBRARIES})
 
 add_executable(trajectory_planer src/TP/trajectory_planer.cpp include/TP/trajectory_planer_functions.cpp include/TP/TreeObejctPosition.cpp)
 target_link_libraries(trajectory_planer ${catkin_LIBRARIES})
+
+add_executable(prey_control src/prey_control.cpp)
+target_link_libraries(prey_control ${catkin_LIBRARIES})

@@ -2,7 +2,8 @@
     "files.associations": {
         "deque": "cpp",
         "string": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "memory": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/DVC"
 }
