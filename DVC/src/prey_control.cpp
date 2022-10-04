@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     wait4connect();
 
     // wait for used to switch to mode GUIDED
-    wait4start();
+    set_mode("GUIDED");
 
     // create local reference frame
     initialize_local_frame();

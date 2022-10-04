@@ -3,7 +3,14 @@
 <!-- Launchfile that inclueds all nodes and params needed for DVC project -->
 <launch>
 
-    <node pkg="dvc" type="prey_control" name="square2" output="screen" ns="/predator">
+    <!-- MAIN CONTROLLER NODE -->
+    <node pkg="dvc" type="predator_main_controller" name="predator_main_controller" output="screen" ns="/predator">
+        <param name="namespace" value="/predator"/>
+        <param name="use_sim_time" value="true" />
+    </node>
+
+    <!-- NODE THAT ANALIZES DATA -->
+    <node pkg="dvc" type="read_yolo_data" name="read_yolo_data" output="screen" ns="/predator">
         <param name="namespace" value="/predator"/>
         <param name="use_sim_time" value="true" />
     </node>

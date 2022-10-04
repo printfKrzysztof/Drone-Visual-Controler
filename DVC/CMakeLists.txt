@@ -200,3 +200,9 @@ catkin_install_python(PROGRAMS
 
 add_executable(prey_control src/prey_control.cpp)
 target_link_libraries(prey_control ${catkin_LIBRARIES})
+
+add_executable(predator_main_controller src/predator_main_controller.cpp)
+target_link_libraries(predator_main_controller ${catkin_LIBRARIES})
+
+add_executable(read_yolo_data src/read_yolo_data.cpp)
+target_link_libraries(read_yolo_data ${catkin_LIBRARIES})
