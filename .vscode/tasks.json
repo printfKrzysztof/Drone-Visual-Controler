@@ -15,9 +15,9 @@
 		},
 		{
 			"type": "shell",
-			"label": "drone",
+			"label": "predator",
 			"group": "none",
-			"command": "./startdrone.sh"
+			"command": "./startpredator.sh"
 		},
 		{
 			"type": "shell",

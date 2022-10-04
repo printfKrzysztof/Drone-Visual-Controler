@@ -1,7 +1,7 @@
 <launch>
     <group>
-        <node pkg="dvc" type="prey_control" name="square2" output="screen" ns="/drone2">
-            <param name="namespace" value="/drone2"/>
+        <node pkg="dvc" type="prey_control" name="square2" output="screen" ns="/prey">
+            <param name="namespace" value="/prey"/>
             <param name="use_sim_time" value="true" />
         </node>
     </group>
@@ -9,7 +9,7 @@
     <include file="$(find iq_sim)/launch/mavros_node.launch">
         <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
         <arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
-        <arg name="mavros_ns" value="drone2"/>
+        <arg name="mavros_ns" value="prey"/>
         <arg name="fcu_url" value="udp://127.0.0.1:14561@14565" />
         <arg name="gcs_url" value="" />
         <arg name="respawn_mavros" value="true"/>

@@ -94,7 +94,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include/DR include/MC  include/OGL include/TP  include
+  INCLUDE_DIRS include
   LIBRARIES dvc
   CATKIN_DEPENDS roscpp mavros std_msgs geometry_msgs  message_runtime
   #DEPENDS system_lib
@@ -197,57 +197,6 @@ catkin_install_python(PROGRAMS
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(square src/DR/square.cpp)
-target_link_libraries(square ${catkin_LIBRARIES})
-
-add_executable(circle src/DR/circle.cpp)
-target_link_libraries(circle ${catkin_LIBRARIES})
-
-add_executable(randomly src/DR/randomly.cpp)
-target_link_libraries(randomly ${catkin_LIBRARIES})
-
-add_executable(subscriber src/DR/subscriber.cpp)
-target_link_libraries(subscriber ${catkin_LIBRARIES})
-
-add_executable(sub2 src/DR/sub2.cpp)
-target_link_libraries(sub2 ${catkin_LIBRARIES})
-
-add_executable(drone_ridder src/DR/drone_ridder.cpp include/DR/drone_ridder_functions.cpp)
-target_link_libraries(drone_ridder ${catkin_LIBRARIES})
-
-add_executable(test_DR_square src/DR/test_DR_square.cpp)
-target_link_libraries(test_DR_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_square src/DR/test_set_global_position_square.cpp)
-target_link_libraries(test_set_global_position_square ${catkin_LIBRARIES})
-
-add_executable(test_set_global_position_still src/DR/test_set_global_position_still.cpp)
-target_link_libraries(test_set_global_position_still ${catkin_LIBRARIES})
-
-add_executable(test_set_local_position src/DR/test_set_local_position.cpp)
-target_link_libraries(test_set_local_position ${catkin_LIBRARIES})
-
-add_executable(test_set_position_offset src/DR/test_set_position_offset.cpp)
-target_link_libraries(test_set_position_offset ${catkin_LIBRARIES})
-
-add_executable(test_set_heading src/DR/test_set_heading.cpp)
-target_link_libraries(test_set_heading ${catkin_LIBRARIES})
-
-add_executable(ball_droper src/BD/ball_droper.cpp)
-target_link_libraries(ball_droper ${catkin_LIBRARIES})
-
-add_executable(mission_commander_trees src/MC/mission_commander_trees.cpp include/MC/mission_commander_trees_functions.cpp)
-target_link_libraries(mission_commander_trees ${catkin_LIBRARIES})
-
-add_executable(mission_commander_3color src/MC/mission_commander_3colors.cpp include/MC/mission_commander_3colors_functions.cpp)
-target_link_libraries(mission_commander_3color ${catkin_LIBRARIES})
-
-add_executable(object_global_localizator src/OGL/object_global_localizator.cpp include/OGL/object_global_localizator_functions.cpp)
-target_link_libraries(object_global_localizator ${catkin_LIBRARIES})
-
-add_executable(trajectory_planer src/TP/trajectory_planer.cpp include/TP/trajectory_planer_functions.cpp include/TP/TreeObejctPosition.cpp)
-target_link_libraries(trajectory_planer ${catkin_LIBRARIES})
 
 add_executable(prey_control src/prey_control.cpp)
 target_link_libraries(prey_control ${catkin_LIBRARIES})

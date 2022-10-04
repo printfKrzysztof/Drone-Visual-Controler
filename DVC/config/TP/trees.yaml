@@ -1,4 +1,0 @@
-trajectory_planer:
-  idToGo1: 1    # tree2
-  idToGo2: 2    # tree3
-  idToGo3: 1    # tree1 do not want
