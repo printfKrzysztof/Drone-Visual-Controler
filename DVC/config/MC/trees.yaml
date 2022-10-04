@@ -8,11 +8,11 @@ trees:
   #  startEndAlt: 275.0
 
 
-  startPointLongitude: 16.232411
-  startPointLatitude: 52.2393905
+  startPointLongitude: 0
+  startPointLatitude: 0
   endPointLongitude: 16.2307455
   endPointLatitude: 52.2396365
-  startEndAlt: 154.0
+  startEndAlt: 3.0
 
   #   Malownicza
 #  startPointLongitude: 19.604477
@@ -23,8 +23,8 @@ trees:
   #
   #   altitudes
   dropBallAlt: 5.0    # [m]
-  lowFlyAlt: 10.0     # [m]
-  flyAlt: 30.0        # [m]
+  lowFlyAlt: 3.0     # [m]
+  flyAlt: 3.0        # [m]
   #
   #  conversions
   #  aslToWGS83: -33.5  # Łódź
