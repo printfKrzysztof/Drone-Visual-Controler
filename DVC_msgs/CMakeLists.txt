@@ -49,10 +49,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  ObjectGlobalPosition.msg
-  ObjectsGlobalPositions.msg
-  TrajectoryPlaner.msg
-  SimpleTree.msg
+  SearchResult.msg
+  SearchResults.msg
  )
 
 ## Generate services in the 'srv' folder

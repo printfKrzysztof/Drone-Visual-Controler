@@ -9,9 +9,8 @@
  *
  */
 
-//Includes
+// Includes
 #include <gnc_functions.hpp>
-
 
 int main(int argc, char **argv)
 {
@@ -26,7 +25,7 @@ int main(int argc, char **argv)
     wait4connect();
 
     // wait for used to switch to mode GUIDED
-    set_mode("GUIDED");
+    wait4start();
 
     // create local reference frame
     initialize_local_frame();
@@ -84,8 +83,8 @@ int main(int argc, char **argv)
             }
             else
             {
-                counter=0;
-                //do it again
+                counter = 0;
+                // do it again
             }
         }
     }

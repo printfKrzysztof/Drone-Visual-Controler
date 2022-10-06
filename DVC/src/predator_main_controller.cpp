@@ -33,15 +33,12 @@ int main(int argc, char **argv)
     // create local reference frame
     initialize_local_frame();
 
-    takeoff(3);
-    
     ROS_INFO("PREDATOR INITIALIZED - READY TO FLY");
     // specify control loop rate. We recommend a low frequency to not over load the FCU with messages. Too many messages will cause the drone to be sluggish
     ros::Rate rate(4.0);
     int counter = 0;
     while (ros::ok())
     {
-        ROS_INFO("IN MAIN");
         ros::spinOnce();
         rate.sleep();
         switch (state)
@@ -49,8 +46,9 @@ int main(int argc, char **argv)
         case DVC_STATE_TAKEOFF:
             ROS_INFO("Taking off");
             // request takeoff
-            //TODO Add working sets
-            state=DVC_STATE_SEARCH;
+            // TODO Add working sets
+            takeoff(3);
+            state = DVC_STATE_SEARCH;
             break;
 
         case DVC_STATE_SEARCH:

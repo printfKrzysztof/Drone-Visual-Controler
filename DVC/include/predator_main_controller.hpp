@@ -8,7 +8,8 @@
  * @copyright Copyright (c) 2022
  *
  */
-
+#ifndef PREDATOR_MAIN_CONTROLLER_HPP
+#define PREDATOR_MAIN_CONTROLLER_HPP
 typedef enum
 {
 
@@ -19,3 +20,4 @@ typedef enum
 
 } DVC_STATE;
 
+#endif //PREDATOR_MAIN_CONTROLLER_HPP
