@@ -204,5 +204,5 @@ target_link_libraries(prey_control ${catkin_LIBRARIES})
 add_executable(predator_main_controller src/predator_main_controller.cpp)
 target_link_libraries(predator_main_controller ${catkin_LIBRARIES})
 
-add_executable(read_yolo_data src/read_yolo_data.cpp)
+add_executable(read_yolo_data src/read_yolo_data.cpp include/read_yolo_data_functions.cpp)
 target_link_libraries(read_yolo_data ${catkin_LIBRARIES})

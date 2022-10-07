@@ -1,5 +1,5 @@
 /**
- * @file read_yolo_data.hpp
+ * @file read_yolo_data_functions.cpp
  * @author Krzysztof B (github)
  * @brief
  * @version 0.1
@@ -9,10 +9,8 @@
  *
  */
 
-#ifndef READ_YOLO_DATA_HPP
-#define READ_YOLO_DATA_HPP
 
-#include <common_data.hpp>
+#include <read_yolo_data.h>
 
 ros::Publisher search_pub;
 darknet_ros_msgs::BoundingBoxes boundingBoxes;
@@ -65,4 +63,3 @@ void PublishMsg()
     search_pub.publish(found_objects);
     //TODO ?WHY NOT PUBLISHING?
 }
-#endif // READ_YOLO_DATA_HPP

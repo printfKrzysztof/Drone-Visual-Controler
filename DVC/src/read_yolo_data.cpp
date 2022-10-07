@@ -10,7 +10,7 @@
  */
 
 #include <common_data.hpp>
-#include <read_yolo_data.hpp>
+#include <read_yolo_data.h>
 uint8_t data_queue;
 
 int main(int argc, char **argv)
