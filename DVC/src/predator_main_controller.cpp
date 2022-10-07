@@ -12,6 +12,11 @@
 // Includes
 #include <gnc_functions.hpp>
 #include <predator_main_controller.hpp>
+#include <common_data.hpp>
+
+void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
+{
+}
 
 // Variables
 DVC_STATE state;
@@ -20,10 +25,9 @@ int main(int argc, char **argv)
     // initialize ros
     ros::init(argc, argv, "gnc_node");
     ros::NodeHandle gnc_node("~");
-
     // initialize control publisher/subscribers
     init_publisher_subscriber(gnc_node);
-
+    SaveNamespace(gnc_node);
     // wait for FCU connection
     wait4connect();
 
@@ -35,6 +39,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("PREDATOR INITIALIZED - READY TO FLY");
     // specify control loop rate. We recommend a low frequency to not over load the FCU with messages. Too many messages will cause the drone to be sluggish
+    ros::Subscriber sub = gnc_node.subscribe((GetNamespace() + "/read_yolo_data/search_results").c_str(), 1, detection_cb);
     ros::Rate rate(4.0);
     int counter = 0;
     while (ros::ok())
@@ -46,7 +51,6 @@ int main(int argc, char **argv)
         case DVC_STATE_TAKEOFF:
             ROS_INFO("Taking off");
             // request takeoff
-            // TODO Add working sets
             takeoff(3);
             state = DVC_STATE_SEARCH;
             break;

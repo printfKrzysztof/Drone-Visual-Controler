@@ -3,41 +3,66 @@
  * @author Krzysztof B (github)
  * @brief
  * @version 0.1
- * @date 2022-10-04
+ * @date 2022-10-07
  *
- * @cite IQ_SIM
+ * @copyright Copyright (c) 2022
  *
  */
 
 #ifndef READ_YOLO_DATA_HPP
 #define READ_YOLO_DATA_HPP
 
-#include <ros/ros.h>
-#include <darknet_ros_msgs/BoundingBoxes.h>
-#include <dvc_msgs/SearchResults.h>
+#include <common_data.hpp>
 
-// Publishers
 ros::Publisher search_pub;
+darknet_ros_msgs::BoundingBoxes boundingBoxes;
+bool yolo_flag = false;
 
-int init_search_publisher(ros::NodeHandle controlnode, int checked)
+void yolo_sub_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 {
-	if (checked!=0)
-	{
-		std::string ros_namespace;
-		if (!controlnode.hasParam("namespace"))
-		{
-
-			ROS_INFO("using default namespace");
-		}
-		else
-		{
-			controlnode.getParam("namespace", ros_namespace);
-			ROS_INFO("using namespace %s", ros_namespace.c_str());
-		}
-
-		search_pub = controlnode.advertise<dvc_msgs::SearchResults>((ros_namespace + "/read_data/search_results").c_str(), 10);
-	}
-	return 0;
+    boundingBoxes = *msg;
+    yolo_flag = true;
 }
 
+void InitPublisher(ros::NodeHandle controlnode)
+{
+    std::string ros_ns;
+    if (!controlnode.hasParam("namespace"))
+    {
+        ros_ns = "";
+    }
+    else
+    {
+        controlnode.getParam("namespace", ros_ns);
+    }
+    controlnode.advertise<dvc_msgs::SearchResults>((ros_ns + "/read_yolo_data/search_results").c_str(), 10);
+}
+
+bool checkFlags()
+{
+    return yolo_flag;
+}
+
+void resetFlags()
+{
+    yolo_flag = 0;
+}
+
+void PublishMsg()
+{
+    dvc_msgs::SearchResults found_objects;
+    dvc_msgs::SearchResult found_object;
+    for (const auto &bounding_box_auto : boundingBoxes.bounding_boxes)
+    {
+        found_object.centre_x = (bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
+        found_object.centre_y = (bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
+        found_object.id = bounding_box_auto.id;
+        found_object.size = (bounding_box_auto.xmax - bounding_box_auto.xmin) * (bounding_box_auto.ymax - bounding_box_auto.ymin);
+        ROS_INFO((std::to_string(found_object.size) + "IS_OK?").c_str());
+
+        found_objects.search_results.push_back(found_object);
+    }
+    search_pub.publish(found_objects);
+    //TODO ?WHY NOT PUBLISHING?
+}
 #endif // READ_YOLO_DATA_HPP

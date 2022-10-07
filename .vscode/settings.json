@@ -63,7 +63,8 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "bit": "cpp"
+        "bit": "cpp",
+        "*.ipp": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/DVC"
 }
