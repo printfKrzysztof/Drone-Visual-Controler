@@ -30,7 +30,7 @@ public:
 	YoloTranslator(ros::NodeHandle *nh)
 	{
 		std::string ros_ns;
-		if (nh->hasParam("namespace"))
+		if (!nh->hasParam("namespace"))
 		{
 			ros_ns = "";
 		}
@@ -40,6 +40,7 @@ public:
 		}
 		pub = nh->advertise<dvc_msgs::SearchResults>((ros_ns + "/read_yolo_data/search_results").c_str(), 10);
 		sub = nh->subscribe("/darknet_ros/bounding_boxes", 1000, &YoloTranslator::callback_number, this);
+		ROS_INFO((ros_ns + " IS A NEW TOPIC").c_str());
 	}
 
 	/**
@@ -70,7 +71,7 @@ public:
 int main(int argc, char **argv)
 {
 	ros::init(argc, argv, "read_yolo_data");
-	ros::NodeHandle read_yolo_data;
+	ros::NodeHandle read_yolo_data("~");
 	YoloTranslator yt = YoloTranslator(&read_yolo_data);
 	ros::spin();
 }
