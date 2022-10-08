@@ -38,8 +38,8 @@ public:
 		{
 			nh->getParam("namespace", ros_ns);
 		}
-		pub = nh->advertise<dvc_msgs::SearchResults>((ros_ns + "/read_yolo_data/search_results").c_str(), 10);
-		sub = nh->subscribe("/darknet_ros/bounding_boxes", 1000, &YoloTranslator::callback_number, this);
+		pub = nh->advertise<dvc_msgs::SearchResults>((ros_ns + "/read_yolo_data/search_results").c_str(), 1);
+		sub = nh->subscribe("/darknet_ros/bounding_boxes", 1, &YoloTranslator::callback_number, this);
 		ROS_INFO((ros_ns + " IS A NEW TOPIC").c_str());
 	}
 
@@ -59,7 +59,6 @@ public:
 			SingleObject.centre_y = (bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
 			SingleObject.id = bounding_box_auto.id;
 			SingleObject.size = (bounding_box_auto.xmax - bounding_box_auto.xmin) * (bounding_box_auto.ymax - bounding_box_auto.ymin);
-			ROS_INFO((std::to_string(SingleObject.size) + "IS_OK?").c_str());
 
 			AllObjects.search_results.push_back(SingleObject);
 		}

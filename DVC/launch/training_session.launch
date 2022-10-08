@@ -1,0 +1,45 @@
+<!-- DRONE VISUAL CONTROLLER    -->
+<!-- KRZYSZTOF BORTNOWSKI       -->
+<!-- Launchfile that inclueds all nodes and params needed for DVC project -->
+<launch>
+
+    <!-- MAIN CONTROLLER NODE -->
+    <node pkg="dvc" type="learning_session" name="learning_session" output="screen" ns="/predator">
+        <param name="namespace" value="/predator"/>
+        <param name="use_sim_time" value="true" />
+
+    </node>
+
+    <!-- SIMULATOR BY IQ -->
+    <include file="$(find iq_sim)/launch/runway.launch"/>
+
+    <!-- IMAGE SAVER NODE -->
+    <!--
+    <node name="image_saver" pkg="image_view" type="image_saver">
+        <remap from="image" to="/webcam/image_raw" />
+    </node>
+    INSTEAD I USE: rosrun image_view image_saver image:=/webcam/image_raw
+
+    -->
+    <node name="image_viewer" pkg="image_view" type="image_view" output="screen">
+        <remap from="image" to="/webcam/image_raw" />
+        <param name="save_all_image" value="false" />
+        <param name="filename_format" value="~/ImageSavedFromROS/image_%04d.png" />
+    </node>
+    <!-- MAIN MAVROS NODE -->
+    <include file="$(find iq_sim)/launch/mavros_node.launch">
+        <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+        <arg name="mavros_ns" value="predator"/>
+        <arg name="fcu_url" value="udp://127.0.0.1:14551@14555" />
+        <arg name="gcs_url" value="" />
+        <arg name="respawn_mavros" value="true"/>
+        <arg name="tgt_system" value="1)" />
+        <arg name="tgt_component" value="1" />
+        <arg name="log_output" value="screen" />
+    </include>
+
+    <!-- PRAY PATH (SECOND MAVROS NODE)-->
+    <include file="$(find dvc)/launch/prey_path.launch" />
+
+</launch>

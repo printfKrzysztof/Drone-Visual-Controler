@@ -16,6 +16,20 @@
 
 void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
 {
+     ROS_INFO("Recived SUB");
+    for (const auto &search_result_auto : msg->search_results)
+    {
+        ROS_INFO("Recived Detector");
+    }
+}
+
+void search_cb(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
+{
+     ROS_INFO("Recived SUB2");
+    for (const auto &bounding_boxes_auto : msg->bounding_boxes)
+    {
+        ROS_INFO("Recived Search (Darknet)");
+    }
 }
 
 // Variables
@@ -37,8 +51,9 @@ int main(int argc, char **argv)
     initialize_local_frame();
 
     ROS_INFO("PREDATOR INITIALIZED - READY TO FLY");
-    // specify control loop rate. We recommend a low frequency to not over load the FCU with messages. Too many messages will cause the drone to be sluggish
-    ros::Subscriber sub = gnc_node.subscribe( "predator/read_yolo_data/search_results", 1, detection_cb);
+
+    ros::Subscriber sub = gnc_node.subscribe("/predator/read_yolo_data/search_results", 1, detection_cb);
+    ros::Subscriber sub2 = gnc_node.subscribe("/darknet_ros/bounding_boxes", 1, search_cb);
     ros::Rate rate(4.0);
     int counter = 0;
     while (ros::ok())

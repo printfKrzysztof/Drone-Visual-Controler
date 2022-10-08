@@ -206,3 +206,6 @@ target_link_libraries(predator_main_controller ${catkin_LIBRARIES})
 
 add_executable(read_yolo_data src/read_yolo_data.cpp)
 target_link_libraries(read_yolo_data ${catkin_LIBRARIES})
+
+add_executable(learning_session src/learning_session.cpp)
+target_link_libraries(learning_session ${catkin_LIBRARIES})

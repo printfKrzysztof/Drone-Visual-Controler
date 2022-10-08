@@ -24,6 +24,12 @@
 			"label": "prey",
 			"group": "none",
 			"command": "./startprey.sh"
+		},
+		{
+			"type": "shell",
+			"label": "lern",
+			"group": "none",
+			"command": "roslaunch dvc training_session.launch  "
 		}
 	]
 }
