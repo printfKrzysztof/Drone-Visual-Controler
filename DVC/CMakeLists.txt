@@ -96,7 +96,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES dvc
-  CATKIN_DEPENDS roscpp mavros std_msgs geometry_msgs  message_runtime
+  CATKIN_DEPENDS roscpp mavros std_msgs geometry_msgs message_runtime
   #DEPENDS system_lib
 )
 
@@ -204,5 +204,5 @@ target_link_libraries(prey_control ${catkin_LIBRARIES})
 add_executable(predator_main_controller src/predator_main_controller.cpp)
 target_link_libraries(predator_main_controller ${catkin_LIBRARIES})
 
-add_executable(read_yolo_data src/read_yolo_data.cpp include/read_yolo_data_functions.cpp)
+add_executable(read_yolo_data src/read_yolo_data.cpp)
 target_link_libraries(read_yolo_data ${catkin_LIBRARIES})
