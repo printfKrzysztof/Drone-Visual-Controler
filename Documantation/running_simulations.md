@@ -102,5 +102,11 @@ You can also use mission commander if you want:
 cd MissionPlanner-latest/
 mono MissionPlanner.exe
 ```
+## Starting mission
 
+To start mission simply type in terminal no.2 and no.3 
+```
+mode GUIDED
+```
+Which will tell software in the loop to start mission.
 
