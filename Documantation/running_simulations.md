@@ -2,7 +2,13 @@
 
 Lets base our example roslaunch upon [TreeSeeker](https://github.com/Pigwomaniak/tree_seeker) from [Pigwomaniak](https://github.com/Pigwomaniak) and [tom1322s](https://github.com/tom1322s) inspired by [Inteligent Quads](https://github.com/Intelligent-Quads)
 
-  
+## Table of Contents
+Running roslaunch files
+  - [Prerequisites](#prerequisites)
+  - [Dependencies (empty worksapce)](#dependencies-empty-worksapce)
+  - [Installing DVC](#installing-dvc)
+  - [Running program and simulation](#running-program-and-simulation)
+  - [Starting mission](#starting-mission)
 
 ## Prerequisites
 
