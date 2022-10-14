@@ -27,7 +27,7 @@ public:
         pub = nh->advertise<std_msgs::Char>("/Pilot", 1);
         sub = nh->subscribe("/predator/ToPilot", 1, &Pilot::predator_cb, this);
     }
-    void keyLoop();
+    void keyLoop(ros::NodeHandle *nh);
     void predator_cb(const std_msgs::String::ConstPtr &msg)
     {
         flags = 1;
@@ -35,6 +35,12 @@ public:
         ROS_INFO("Why doesnt it work?");
         Czarus.data = 'k';
         pub.publish(Czarus);
+    }
+    void timer_cb(const ros::TimerEvent &event)
+    {
+        system("clear");
+        puts("           PILOT           ");
+        puts("---------------------------");
     }
 };
 
@@ -56,11 +62,11 @@ int main(int argc, char **argv)
     Pilot pilot = Pilot(&user_input);
 
     signal(SIGINT, quit);
-    pilot.keyLoop();
+    pilot.keyLoop(&user_input);
     return (0);
 }
 
-void Pilot::keyLoop()
+void Pilot::keyLoop(ros::NodeHandle *nh)
 {
     char c;
     bool dirty = false;
@@ -68,27 +74,33 @@ void Pilot::keyLoop()
     // get the console in raw mode
     tcgetattr(kfd, &cooked);
     memcpy(&raw, &cooked, sizeof(struct termios));
-    raw.c_lflag &= ~(ICANON | ECHO);
+    raw.c_lflag &= ~(ICANON);
+    raw.c_lflag &= ~(ECHO);
     // Setting a new line, then end of file
     raw.c_cc[VEOL] = 1;
     raw.c_cc[VEOF] = 2;
+    raw.c_cc[VTIME] = 0; // TIMEOUT
     tcsetattr(kfd, TCSANOW, &raw);
-    raw.c_cc[VTIME] = 1; //TIMEOUT
+    
     ros::Rate rate(4.0);
+    ros::Timer timer = nh->createTimer(ros::Duration(0.1), &Pilot::timer_cb, this);
+    timer.stop();
     while (ros::ok())
     {
         ros::spinOnce();
 
         if (flags == 1)
         {
+            timer.stop();
             system("clear");
             puts("           PILOT           ");
             puts("---------------------------");
             puts(printer.c_str());
+            timer.start();
             flags = 0;
         }
         // get the next event from the keyboard
-    
+
         if (read(kfd, &c, 1) < 0)
         {
             perror("read():");

@@ -17,6 +17,7 @@
 #include <std_msgs/String.h>
 uint8_t flags = 0;
 
+
 std_msgs::String data_to_pilot;
 void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
 {
