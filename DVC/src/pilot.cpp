@@ -1,3 +1,13 @@
+/**
+ * @file pilot.cpp
+ * @author printfKrzysztof (pritnfKrzysztof@github.null)
+ * @brief 
+ * @version 0.1
+ * @date 2022-10-14
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 #include <ros/ros.h>
 
 #include <signal.h>
