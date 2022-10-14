@@ -32,15 +32,12 @@ public:
     {
         flags = 1;
         printer = msg->data;
-        ROS_INFO("Why doesnt it work?");
-        Czarus.data = 'k';
-        pub.publish(Czarus);
     }
     void timer_cb(const ros::TimerEvent &event)
     {
         system("clear");
-        puts("           PILOT           ");
-        puts("---------------------------");
+        puts("                    DRONE VISUAL CONTROLLER PILOT                    ");
+        puts("---------------------------------------------------------------------");
     }
 };
 
@@ -79,9 +76,10 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
     // Setting a new line, then end of file
     raw.c_cc[VEOL] = 1;
     raw.c_cc[VEOF] = 2;
-    raw.c_cc[VTIME] = 0; // TIMEOUT
+    raw.c_cc[VTIME] = 10; // TIMEOUT
+    raw.c_cc[VMIN] = 0;
     tcsetattr(kfd, TCSANOW, &raw);
-    
+
     ros::Rate rate(4.0);
     ros::Timer timer = nh->createTimer(ros::Duration(0.1), &Pilot::timer_cb, this);
     timer.stop();
@@ -93,8 +91,8 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
         {
             timer.stop();
             system("clear");
-            puts("           PILOT           ");
-            puts("---------------------------");
+            puts("                    DRONE VISUAL CONTROLLER PILOT                    ");
+            puts("---------------------------------------------------------------------");
             puts(printer.c_str());
             timer.start();
             flags = 0;
@@ -103,8 +101,9 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
 
         if (read(kfd, &c, 1) < 0)
         {
-            perror("read():");
+            perror("");
             exit(-1);
+            dirty = false;
         }
         ROS_DEBUG("value: 0x%02X\n", c);
 
@@ -130,6 +129,9 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
             Czarus.data = 'd';
             dirty = true;
             break;
+        default:
+            dirty = false;
+            break;
         }
 
         if (dirty == true)
@@ -137,6 +139,7 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
             pub.publish(Czarus);
             dirty = false;
         }
+        c = 0x00;
     }
 
     return;
