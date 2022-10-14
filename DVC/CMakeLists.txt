@@ -209,3 +209,6 @@ target_link_libraries(read_yolo_data ${catkin_LIBRARIES})
 
 add_executable(learning_session src/learning_session.cpp)
 target_link_libraries(learning_session ${catkin_LIBRARIES})
+
+add_executable(pilot src/pilot.cpp)
+target_link_libraries(pilot ${catkin_LIBRARIES})

@@ -30,6 +30,12 @@
 			"label": "lern",
 			"group": "none",
 			"command": "roslaunch dvc training_session.launch  "
+		},
+		{
+			"type": "shell",
+			"label": "Pilot",
+			"group": "none",
+			"command": "rosrun dvc pilot"
 		}
 	]
 }

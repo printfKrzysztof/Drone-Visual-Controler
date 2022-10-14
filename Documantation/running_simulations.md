@@ -99,6 +99,11 @@ In other terminal no. 3 type:
 ./startdrone.sh
 ```
 
+In other terminal no. 4 type:
+```
+rosrun 
+```
+
 **If you use VS CODE you can use Tasks added by me**
 
 
