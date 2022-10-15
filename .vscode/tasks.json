@@ -11,7 +11,7 @@
 			"type": "shell",
 			"label": "launch",
 			"group": "none",
-			"command": "gnome-terminal --window -- roslaunch dvc dronevisualsim.launch  "
+			"command": "roslaunch dvc dronevisualsim.launch  "
 		},
 		{
 			"type": "shell",

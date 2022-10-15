@@ -57,7 +57,7 @@ By clicking this link you will get there.
 
 When you done go ahead and type in the main darknet folder:
 ```
-./darknet detector train cfg/obj.data cfg/yolo-obj.cfg darknet19_448.conv.23
+./darknet detector train cfg/obj.data cfg/obj.cfg darknet19_448.conv.23
 ```
 
 ## Putting our weights to ros

@@ -57,7 +57,6 @@ add_message_files(
 add_service_files(
   FILES
   drop_ball.srv
-  treeTable.srv
 )
 
 ## Generate actions in the 'action' folder

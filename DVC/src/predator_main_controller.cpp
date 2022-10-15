@@ -13,26 +13,33 @@
 #include <gnc_functions.hpp>
 #include <predator_main_controller.hpp>
 #include <common_data.hpp>
-#include <std_msgs/Char.h>
-#include <std_msgs/String.h>
+
 uint8_t flags = 0;
-
-
+gnc_api_waypoint WayPoint;
+geometry_msgs::Point a3dpoint;
 std_msgs::String data_to_pilot;
+std_msgs::UInt8 flag_msg;
 void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
 {
 
-    //ROS_INFO("Recived detection");
+    // ROS_INFO("Recived detection");
     for (const auto &search_result_auto : msg->search_results)
     {
         if (!(flags & FLAG_USER_LOCKED))
         {
             data_to_pilot.data.clear();
-            data_to_pilot.data.append("Wykryto obiekt: id ");
-            data_to_pilot.data.append(std::to_string(search_result_auto.id));
+            data_to_pilot.data.append("Wykryto obiekt");
             data_to_pilot.data.append("  --> Press l to lock in \n");
             flags |= FLAG_NEW_MESSAGE;
-            //ROS_INFO("Ready to send msg");
+            // ROS_INFO("Ready to send msg");
+        }
+        else
+        {
+            a3dpoint = get_current_location();
+            WayPoint.psi = get_current_heading() + search_result_auto.angle;
+            WayPoint.x = a3dpoint.x; // search_result_auto.distance_prediction;
+            WayPoint.y = a3dpoint.y; // search_result_auto.distance_prediction;
+            WayPoint.z = a3dpoint.z + search_result_auto.height_correction;
         }
     }
 }
@@ -45,7 +52,8 @@ void pilot_cb(const std_msgs::Char::ConstPtr &msg)
     switch (recived_cmd)
     {
     case 'a':
-       // flags |= FLAG_USER_LOCKED;
+        flags |= FLAG_USER_LOCKED;
+        flag_msg.data = flags;
         break;
     case 'b':
         break;
@@ -74,7 +82,9 @@ int main(int argc, char **argv)
 
     ros::Subscriber sub = gnc_node.subscribe("/predator/read_yolo_data/search_results", 1, detection_cb);
     ros::Subscriber sub2 = gnc_node.subscribe("/Pilot", 1, pilot_cb);
-    ros::Publisher pub = gnc_node.advertise<std_msgs::String>("/predator/ToPilot", 1);
+    ros::Publisher pub_to_pilot = gnc_node.advertise<std_msgs::String>("/predator/ToPilot", 1);
+    ros::Publisher pub_flag = gnc_node.advertise<std_msgs::UInt8>("/predator/Flags", 1);
+
     ros::Rate rate(4.0);
     int counter = 0;
     while (ros::ok())
@@ -83,8 +93,8 @@ int main(int argc, char **argv)
         rate.sleep();
         if (flags & FLAG_NEW_MESSAGE)
         {
-            //ROS_INFO("Msg published");
-            pub.publish(data_to_pilot);
+            // ROS_INFO("Msg published");
+            pub_to_pilot.publish(data_to_pilot);
             flags &= !FLAG_NEW_MESSAGE;
         }
         switch (state)
@@ -100,11 +110,15 @@ int main(int argc, char **argv)
             /* code */
             ROS_INFO_ONCE("Searching");
             if (flags & FLAG_USER_LOCKED)
+            {
                 state = DVC_STATE_FOLLOW;
+                pub_flag.publish(flag_msg);
+            }
             break;
         case DVC_STATE_FOLLOW:
             ROS_INFO_ONCE("FOLLOW");
-            /* code */
+            set_destination(WayPoint.x, WayPoint.y, WayPoint.z, WayPoint.psi);
+            // set_heading(WayPoint.psi);
             break;
         case DVC_STATE_LANDING:
             /* code */
