@@ -13,7 +13,7 @@
 
 #define MIDDLE_X 320
 #define MIDDLE_Y 240
-#define X_TO_RAD (float)(0.5 / 271)
+#define X_TO_DEG (float)(90 / 271)
 
 class YoloTranslator
 {
@@ -63,16 +63,20 @@ public:
 
 			int centre_x = (bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
 			int centre_y = (bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
-			// 271 -> 0,5 rad (90 deg)
-			SingleObject.angle = (centre_x - MIDDLE_X) * X_TO_RAD;
+			// 271 -> 0,5 pi rad (90 deg)
+			SingleObject.angle = (centre_x - MIDDLE_X) * X_TO_DEG; //False if backwors TODO
 			if (centre_y - 10 > MIDDLE_Y)
-				SingleObject.height_correction = -1;
-			else if (centre_y + 10< MIDDLE_Y)
-				SingleObject.height_correction = 1;
+				SingleObject.height_correction = -0.1;
+			else if (centre_y + 10 < MIDDLE_Y)
+				SingleObject.height_correction = 0.1;
 			else
 				SingleObject.height_correction = 0;
 
-			SingleObject.distance_prediction = (bounding_box_auto.xmax - bounding_box_auto.xmin) * (bounding_box_auto.ymax - bounding_box_auto.ymin);
+			int size = (bounding_box_auto.xmax - bounding_box_auto.xmin) * (bounding_box_auto.ymax - bounding_box_auto.ymin);
+			float scaler = 10000;
+			SingleObject.distance_prediction = scaler / size;
+			if (size > 10000)
+				SingleObject.distance_prediction = 0;
 
 			AllObjects.search_results.push_back(SingleObject);
 		}

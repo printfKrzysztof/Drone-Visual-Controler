@@ -73,21 +73,21 @@ int main(int argc, char **argv)
     int counter = 0;
     while (ros::ok())
     {
-        // ros::spinOnce();
-        // rate.sleep();
-        // if (check_waypoint_reached(.3) == 1)
-        // {
-        //     if (counter < waypointList.size())
-        //     {
-        //         set_destination(waypointList[counter].x, waypointList[counter].y, waypointList[counter].z, waypointList[counter].psi);
-        //         counter++;
-        //     }
-        //     else
-        //     {
-        //         counter = 0;
-        //         // do it again
-        //     }
-        // }
+        ros::spinOnce();
+        rate.sleep();
+        if (check_waypoint_reached(.3) == 1)
+        {
+            if (counter < waypointList.size())
+            {
+                set_destination(waypointList[counter].x, waypointList[counter].y, waypointList[counter].z, waypointList[counter].psi);
+                counter++;
+            }
+            else
+            {
+                counter = 0;
+                // do it again
+            }
+        }
     }
     return 0;
 }

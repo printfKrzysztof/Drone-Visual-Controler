@@ -13,6 +13,7 @@
 #include <gnc_functions.hpp>
 #include <predator_main_controller.hpp>
 #include <common_data.hpp>
+#include <math.h>
 
 uint8_t flags = 0;
 gnc_api_waypoint WayPoint;
@@ -37,8 +38,8 @@ void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
         {
             a3dpoint = get_current_location();
             WayPoint.psi = get_current_heading() + search_result_auto.angle;
-            WayPoint.x = a3dpoint.x; // search_result_auto.distance_prediction;
-            WayPoint.y = a3dpoint.y; // search_result_auto.distance_prediction;
+            WayPoint.x = a3dpoint.x + search_result_auto.distance_prediction * sin(M_PI/180 * search_result_auto.angle); // search_result_auto.distance_prediction;
+            WayPoint.y = a3dpoint.y + search_result_auto.distance_prediction * cos(M_PI/180 * search_result_auto.angle);
             WayPoint.z = a3dpoint.z + search_result_auto.height_correction;
         }
     }
