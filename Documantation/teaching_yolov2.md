@@ -1,6 +1,14 @@
 # Training dataset to use in yolo
 
 
+Training dataset to use in yolo
+  - [How does it work:](#how-does-it-work)
+  - [Getting images](#getting-images)
+  - [Geting txt files](#geting-txt-files)
+  - [Training yolo v2](#training-yolo-v2)
+  - [Putting our weights to ros](#putting-our-weights-to-ros)
+- [Contact:](#contact)
+- [Direct Sources:](#direct-sources)
 ---
 ## How does it work:
 We need to get pictures with our object that we want to include. Then we make txt file where we give position of our object using bounding boxes. 

@@ -248,11 +248,8 @@ sudo dpkg --configure -a
 
 
 - https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_gazebo_arduplugin.md 
-
 - https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/Installing_Ardupilot_20_04.md
-
 - https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/installing_ros_20_04.md 
-
 - https://github.com/Intelligent-Quads/iq_tutorials/blob/master/docs/intro_to_yolo.md 
 
 

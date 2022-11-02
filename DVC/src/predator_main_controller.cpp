@@ -37,10 +37,11 @@ void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
         else
         {
             a3dpoint = get_current_location();
-            WayPoint.psi = get_current_heading() + search_result_auto.angle;
-            WayPoint.x = a3dpoint.x + search_result_auto.distance_prediction * sin(M_PI/180 * search_result_auto.angle); // search_result_auto.distance_prediction;
-            WayPoint.y = a3dpoint.y + search_result_auto.distance_prediction * cos(M_PI/180 * search_result_auto.angle);
+            WayPoint.psi = get_current_heading();
+            WayPoint.x = a3dpoint.x + search_result_auto.distance_prediction * sin(M_PI / 180 * (search_result_auto.angle - WayPoint.psi)); // s)earch_result_auto.distance_prediction;
+            WayPoint.y = a3dpoint.y + search_result_auto.distance_prediction * cos(M_PI / 180 * (search_result_auto.angle - WayPoint.psi));
             WayPoint.z = a3dpoint.z + search_result_auto.height_correction;
+            WayPoint.psi = get_current_heading() - search_result_auto.angle;
         }
     }
 }
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
                 state = DVC_STATE_FOLLOW;
                 pub_flag.publish(flag_msg);
             }
+            set_speed(30);
             break;
         case DVC_STATE_FOLLOW:
             ROS_INFO_ONCE("FOLLOW");

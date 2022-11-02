@@ -1,6 +1,7 @@
 # Running roslaunch files (simulation and programs at once)
 
-Lets base our example roslaunch upon [TreeSeeker](https://github.com/Pigwomaniak/tree_seeker) from [Pigwomaniak](https://github.com/Pigwomaniak) and [tom1322s](https://github.com/tom1322s) inspired by [Inteligent Quads](https://github.com/Intelligent-Quads)
+Inspired by [Inteligent Quads](https://github.com/Intelligent-Quads).
+
 
 ## Table of Contents
 Running roslaunch files
@@ -89,22 +90,22 @@ To run program you type in unused terminal:
 roslaunch dvc dronevisualsim.launch
 ```
 
-In other terminal no. 2 type:
+In terminal no. 2 type:
 ```
 ./startpray.sh
 ```
 
-In other terminal no. 3 type:
+In terminal no. 3 type:
 ```
 ./startdrone.sh
 ```
 
-In other terminal no. 4 type:
+In terminal no. 4 type:
 ```
-rosrun 
+rosrun dvc pilot
 ```
 
-**If you use VS CODE you can use Tasks added by me**
+**If you use VS CODE you can use Tasks added by me.**
 
 
 You can also use mission commander if you want:
@@ -113,11 +114,18 @@ You can also use mission commander if you want:
 cd MissionPlanner-latest/
 mono MissionPlanner.exe
 ```
+or setup your qGrandControl
+```
+./QGroundControl.AppImage
+```
+Remember to setup your drone connection as shown:
+![GROUND_CTRL](qgroundcontrol.jpg "Picture")
+
 ## Starting mission
 
 To start mission simply type in terminal no.2 and no.3 
 ```
 mode GUIDED
 ```
-Which will tell software in the loop to start mission.
+Which will tell software in the loop to start mission. Then by chaging position of prey our drone shall follow it.
 

@@ -36,6 +36,12 @@
 			"label": "Pilot",
 			"group": "none",
 			"command": "rosrun dvc pilot"
+		},
+		{
+			"type": "shell",
+			"label": "qGroundControl",
+			"group": "none",
+			"command": "~/QGroundControl.AppImage"
 		}
 	]
 }

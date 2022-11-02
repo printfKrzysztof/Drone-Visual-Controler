@@ -11,9 +11,9 @@
 
 #include <common_data.hpp>
 
-#define MIDDLE_X 320
+#define MIDDLE_X 320.00
 #define MIDDLE_Y 240
-#define X_TO_DEG (float)(90 / 271)
+#define X_TO_DEG (double)(30 / 271.00)
 
 class YoloTranslator
 {
@@ -61,22 +61,23 @@ public:
 		for (const auto &bounding_box_auto : msg->bounding_boxes)
 		{
 
-			int centre_x = (bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
-			int centre_y = (bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
+			int centre_x = (int) (bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
+			int centre_y = (int) (bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
 			// 271 -> 0,5 pi rad (90 deg)
-			SingleObject.angle = (centre_x - MIDDLE_X) * X_TO_DEG; //False if backwors TODO
+			SingleObject.angle = (double) ((centre_x - MIDDLE_X) * X_TO_DEG); 
+			
 			if (centre_y - 10 > MIDDLE_Y)
-				SingleObject.height_correction = -0.1;
+				SingleObject.height_correction = -(centre_y - MIDDLE_Y) * 0.1;
 			else if (centre_y + 10 < MIDDLE_Y)
-				SingleObject.height_correction = 0.1;
+				SingleObject.height_correction = -(centre_y - MIDDLE_Y) * 0.1;
 			else
 				SingleObject.height_correction = 0;
 
 			int size = (bounding_box_auto.xmax - bounding_box_auto.xmin) * (bounding_box_auto.ymax - bounding_box_auto.ymin);
 			float scaler = 10000;
 			SingleObject.distance_prediction = scaler / size;
-			if (size > 10000)
-				SingleObject.distance_prediction = 0;
+			if (size > 2000)
+				SingleObject.distance_prediction = -5;
 
 			AllObjects.search_results.push_back(SingleObject);
 		}
