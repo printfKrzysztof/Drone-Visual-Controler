@@ -2,7 +2,7 @@
 
 
 Training dataset to use in yolo
-  - [How does it work:](#how-does-it-work)
+  - [How does it work](#how-does-it-work)
   - [Getting images](#getting-images)
   - [Geting txt files](#geting-txt-files)
   - [Training yolo v2](#training-yolo-v2)
@@ -10,7 +10,7 @@ Training dataset to use in yolo
 - [Contact:](#contact)
 - [Direct Sources:](#direct-sources)
 ---
-## How does it work:
+## How does it work
 We need to get pictures with our object that we want to include. Then we make txt file where we give position of our object using bounding boxes. 
 
 Example data_set (picture + txt file):
@@ -25,7 +25,7 @@ Then we generate weights using Darknets Yolo repo.
 
 ## Getting images
 
-To get images of drone i used simulation by running created roslaunch file.
+To get images of drone i used simulation therfore created roslaunch file. Given launchfile can be awaken by typing in terminal:
 ```
 roslaunch dvc training_session.launch
 ```
@@ -84,11 +84,12 @@ Then in the launch file you have to point to your new config file in the line:
 
     <rosparam command="load" ns="darknet_ros" file="$(find darknet_ros)/config/your_config_file.yaml"/>
 
-### Contact:
+### Contact
 
 - Made by Krzysztof B as a part of BEng thesis.
 - You can msg me via [github](https://github.com/printfKrzysztof).
-### Direct Sources:
+
+### Direct Sources
 
 - http://wiki.ros.org/noetic/Installation/Ubuntu
 - https://pjreddie.com/darknet/yolo/
