@@ -11,7 +11,7 @@
 
 // Includes
 #include <gnc_functions.hpp>
-#include <common_data.hpp>
+#include <main.hpp>
 
 int main(int argc, char **argv)
 {

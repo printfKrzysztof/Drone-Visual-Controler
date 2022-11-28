@@ -35,6 +35,6 @@
     </include>
 
     <!-- PRAY PATH (SECOND MAVROS NODE)-->
-    <!--include file="$(find dvc)/launch/prey_path.launch" /-->
+    <include file="$(find dvc)/launch/prey_path.launch" />
 
 </launch>
