@@ -69,6 +69,33 @@ void pilot_cb(const std_msgs::Char::ConstPtr &msg)
 DVC_STATE state;
 int main(int argc, char **argv)
 {
+
+    /*
+
+     * We want to know 7 states:
+     * Position in x    x
+     * Position in y    y
+     * Position in z    z
+     * Velocity in x    Vx
+     * Velocity in y    Vy
+     * Velocity in z    Vz
+     * Size of drone    r
+     * 
+     * X=[x, y, z, Vx, Vy, Vz, r]
+     * 
+     * We can measure 3 values
+     * 
+     * Angle between us and robots xy plane     alphaxy
+     * Angle between us and robots z plane      alphaz
+     * Angular size of a drone (width)          deltaalpha
+     * 
+     * Y = [axy, az, da]
+     * 
+     * Estimate function:
+     * Y = h(X, T)
+     * 
+     * 1. f1: axy = 
+     */
     int n = 3; // Number of states
     int m = 1; // Number of measurements
 
