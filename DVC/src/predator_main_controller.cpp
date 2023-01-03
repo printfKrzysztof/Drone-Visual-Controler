@@ -13,7 +13,7 @@
 #include <gnc_functions.hpp>
 #include <main.hpp>
 #include <math.h>
-#include <kalman.hpp>
+#include <kalman_filter.h>
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
@@ -80,24 +80,25 @@ int main(int argc, char **argv)
      * Velocity in y    Vy
      * Velocity in z    Vz
      * Size of drone    r
-     * 
+     *
      * X=[x, y, z, Vx, Vy, Vz, r]
-     * 
+     *
      * We can measure 3 values
-     * 
+     *
      * Angle between us and robots xy plane     alphaxy
      * Angle between us and robots z plane      alphaz
      * Angular size of a drone (width)          deltaalpha
-     * 
+     *
      * Y = [axy, az, da]
-     * 
+     *
      * Estimate function:
      * Y = h(X, T)
-     * 
-     * 1. f1: axy = 
+     *
+     * 1. f1: axy =
      */
-    int n = 3; // Number of states
-    int m = 1; // Number of measurements
+
+    int n = 7; // Number of states
+    int m = 3; // Number of measurements
 
     double dt = 1.0 / 30; // Time step
 
@@ -106,13 +107,26 @@ int main(int argc, char **argv)
     Eigen::MatrixXd Q(n, n); // Process noise covariance
     Eigen::MatrixXd R(m, m); // Measurement noise covariance
     Eigen::MatrixXd P(n, n); // Estimate error covariance
-    A << 1, dt, 0, 0, 1, dt, 0, 0, 1;
-    C << 1, 0, 0;
 
-    // Reasonable covariance matrices
-    Q << .05, .05, .0, .05, .05, .0, .0, .0, .0;
-    R << 5;
-    P << .1, .1, .1, .1, 10000, 10, .1, 10, 100;
+    // state vector (poczatkowy wektor stanu)
+    Eigen::VectorXd x_in(n, 1);
+
+    // state transition matrix (poczatkowa macierz stanu)
+    Eigen::MatrixXd F_in(n, n);
+
+    // measurement matrix  (macierz C)
+    Eigen::MatrixXd H_in(m, n);
+
+    /* --- COVARIANCE MATRIXES --- */
+    // process covariance matrix (poczatkowa kowariancja szumu procesu)
+    Eigen::MatrixXd Q_in(n, n);
+
+    // measurement covariance matrix (poczatkowa kowariancja szumu pomiaru)
+    Eigen::MatrixXd R_in(m, m);
+
+    // state covariance matrix (poczatkowa kowariancja stanu)
+    Eigen::MatrixXd P_in(n, n);
+
     // initialize ros
     ros::init(argc, argv, "gnc_node");
     ros::NodeHandle gnc_node("~");

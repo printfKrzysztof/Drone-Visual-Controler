@@ -108,5 +108,5 @@ target_link_libraries(learning_session ${catkin_LIBRARIES})
 add_executable(pilot src/pilot.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
 
-add_executable(kalman src/kalman.cpp src/kalman-test.cpp)
-target_link_libraries(kalman ${catkin_LIBRARIES})
+add_executable(kalman_filter src/kalman_filter.cpp src/kalman-test.cpp)
+target_link_libraries(kalman_filter ${catkin_LIBRARIES})

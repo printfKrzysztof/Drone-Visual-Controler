@@ -10,11 +10,7 @@
  */
 
 #include <main.hpp>
-
-#define MIDDLE_X 320.00
-#define MIDDLE_Y 240
-#define X_TO_DEG (double)(30 / 271.00)
-#define BUFFER_SIZE 10
+#include "config.h"
 
 extern uint8_t flags;
 class YoloTranslator
@@ -24,7 +20,7 @@ private:
 	dvc_msgs::SearchResult SingleObject;
 	ros::Publisher pub;
 	ros::Subscriber yolo_sub;
-	dvc_msgs::SearchResult Last[BUFFER_SIZE] = {};
+	dvc_msgs::SearchResult Last[10] = {};
 
 public:
 	/**
