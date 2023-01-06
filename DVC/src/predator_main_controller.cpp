@@ -13,7 +13,6 @@
 #include <gnc_functions.hpp>
 #include <main.hpp>
 #include <math.h>
-#include <kalman_filter.h>
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
@@ -70,63 +69,7 @@ DVC_STATE state;
 int main(int argc, char **argv)
 {
 
-    /*
-
-     * We want to know 7 states:
-     * Position in x    x
-     * Position in y    y
-     * Position in z    z
-     * Velocity in x    Vx
-     * Velocity in y    Vy
-     * Velocity in z    Vz
-     * Size of drone    r
-     *
-     * X=[x, y, z, Vx, Vy, Vz, r]
-     *
-     * We can measure 3 values
-     *
-     * Angle between us and robots xy plane     alphaxy
-     * Angle between us and robots z plane      alphaz
-     * Angular size of a drone (width)          deltaalpha
-     *
-     * Y = [axy, az, da]
-     *
-     * Estimate function:
-     * Y = h(X, T)
-     *
-     * 1. f1: axy =
-     */
-
-    int n = 7; // Number of states
-    int m = 3; // Number of measurements
-
-    double dt = 1.0 / 30; // Time step
-
-    Eigen::MatrixXd A(n, n); // System dynamics matrix
-    Eigen::MatrixXd C(m, n); // Output matrix
-    Eigen::MatrixXd Q(n, n); // Process noise covariance
-    Eigen::MatrixXd R(m, m); // Measurement noise covariance
-    Eigen::MatrixXd P(n, n); // Estimate error covariance
-
-    // state vector (poczatkowy wektor stanu)
-    Eigen::VectorXd x_in(n, 1);
-
-    // state transition matrix (poczatkowa macierz stanu)
-    Eigen::MatrixXd F_in(n, n);
-
-    // measurement matrix  (macierz C)
-    Eigen::MatrixXd H_in(m, n);
-
-    /* --- COVARIANCE MATRIXES --- */
-    // process covariance matrix (poczatkowa kowariancja szumu procesu)
-    Eigen::MatrixXd Q_in(n, n);
-
-    // measurement covariance matrix (poczatkowa kowariancja szumu pomiaru)
-    Eigen::MatrixXd R_in(m, m);
-
-    // state covariance matrix (poczatkowa kowariancja stanu)
-    Eigen::MatrixXd P_in(n, n);
-
+    
     // initialize ros
     ros::init(argc, argv, "gnc_node");
     ros::NodeHandle gnc_node("~");
@@ -143,7 +86,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("PREDATOR INITIALIZED - READY TO FLY");
 
-    ros::Subscriber sub = gnc_node.subscribe("/predator/read_yolo_data/search_results", 1, detection_cb);
+    ros::Subscriber sub = gnc_node.subscribe("/predator/filtration/search_results", 1, detection_cb);
     ros::Subscriber sub2 = gnc_node.subscribe("/Pilot", 1, pilot_cb);
     ros::Publisher pub_to_pilot = gnc_node.advertise<std_msgs::String>("/predator/ToPilot", 1);
 
