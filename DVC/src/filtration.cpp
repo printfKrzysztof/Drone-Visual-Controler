@@ -11,10 +11,10 @@
 
 #include <main.hpp>
 #include "config.h"
-#include "kalman_filter.h"
-
-// What Kalman needs
-KalmanFilter ekf;
+#include "kalman.hpp"
+#include "gnc_functions.hpp"
+#include <vector>
+#include <iostream>
 
 /*
  * We want to know 7 states:
@@ -42,115 +42,113 @@ KalmanFilter ekf;
  * 1. f1: axy =
  */
 
-int n = 7; // Number of states
-int m = 3; // Number of measurements
+KalmanFilter ekf;
+geometry_msgs::Point a3dp;
 
-double dt = 1.0 / 30; // Time step
+int n = 7;						// Number of states
+int m = 3;						// Number of measurements
+double dt = 1.0 / REFRESH_RATE; // Time step
 
-// state vector (poczatkowy wektor stanu)
-Eigen::VectorXd x_in(n, 1);
+Eigen::MatrixXd A(n, n); // System dynamics matrix
+Eigen::MatrixXd C(m, n); // Output matrix
+Eigen::MatrixXd Q(n, n); // Process noise covariance
+Eigen::MatrixXd R(m, m); // Measurement noise covariance
+Eigen::MatrixXd P(n, n); // Estimate error covariance
 
-// state transition matrix (poczatkowa macierz stanu)
-Eigen::MatrixXd F_in(n, n);
-
-// measurement matrix  (macierz C)
-Eigen::MatrixXd C_in(m, n);
-
-/* --- COVARIANCE MATRIXES --- */
-// process covariance matrix (poczatkowa kowariancja szumu procesu)
-Eigen::MatrixXd Q_in(n, n);
-
-// measurement covariance matrix (poczatkowa kowariancja szumu pomiaru)
-Eigen::MatrixXd R_in(m, m);
-
-// state covariance matrix (poczatkowa kowariancja stanu)
-Eigen::MatrixXd P_in(n, n);
-
-Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X(n, 1))
-{
-	Eigen::MatrixXd C(m, n);
-	// using vector X calculate all C values and return it;
-	return C;
-}
+Eigen::VectorXd x(n, 1);
+Eigen::VectorXd z(1, m);
+void InitMatrixes();
+Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X);
+//  {
+//  	Eigen::MatrixXd C(m, n);
+//  	// using vector X calculate all C values and return it;
+//  	return C;
+//  }
 extern uint8_t flags;
-
-class DataResender
+void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 {
-
-private:
-	dvc_msgs::SearchResult SingleObject;
-	ros::Publisher pub;
-	ros::Subscriber yolo_sub;
-	dvc_msgs::SearchResult Last[10] = {};
-
-public:
-	/**
-	 * @brief Construct a new Data Resender object
-	 *
-	 * @param nh NodeHandler
-	 */
-	DataResender(ros::NodeHandle *nh)
+	for (const auto &bounding_box_auto : msg->bounding_boxes)
 	{
-		std::string ros_ns;
-		if (!nh->hasParam("namespace"))
-		{
-			ros_ns = "";
-		}
-		else
-		{
-			nh->getParam("namespace", ros_ns);
-		}
-		pub = nh->advertise<dvc_msgs::SearchResults>((ros_ns + "/filtration/search_results").c_str(), 1);
-		yolo_sub = nh->subscribe("/darknet_ros/bounding_boxes", 1, &DataResender::yolo_callback, this);
-		ROS_INFO((ros_ns + " IS A NEW TOPIC").c_str());
-	}
+		int centre_x = (int)(bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
+		int centre_y = (int)(bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
+		// 271 -> 0,5 pi rad (90 deg)
 
-	/**
-	 * @brief Callback for found objects by darknet_ros
-	 *
-	 * @param msg Our messege
-	 */
-	void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
+		int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin);
+	}
+	if (ekf.isInit())
 	{
-		dvc_msgs::SearchResults AllObjects;
-		Eigen::VectorXd z(1, m);
-		for (const auto &bounding_box_auto : msg->bounding_boxes)
-		{
-			int centre_x = (int)(bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
-			int centre_y = (int)(bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
-			// 271 -> 0,5 pi rad (90 deg)
-			SingleObject.angle = (double)((centre_x - MIDDLE_X) * X_TO_DEG);
-
-			int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin)
-
-						   AllObjects.search_results.push_back(SingleObject);
-		}
-		if (ekf.init == false)
-		{
-			ekf.Init(x_in, P_in, F_in, C_in, R_in, Q_in)
-		}
-		else
-			ekf.UpdateEKF(z, C);
-		pub.publish(AllObjects);
+		ekf.update(z, dt, A, C);
 	}
-
-	void flags_callback(const std_msgs::UInt8::ConstPtr &msg)
+	else
 	{
-		flags = msg->data;
+		ekf.init();
 	}
-};
+}
 
 int main(int argc, char **argv)
 {
+	dvc_msgs::StatesVector sv;
 	ros::init(argc, argv, "filtration");
 	ros::NodeHandle filtration("~");
-	DataResender yt = DataResender(&filtration);
+	std::string ros_ns;
+	if (!filtration.hasParam("namespace"))
+	{
+		ros_ns = "";
+	}
+	else
+	{
+		filtration.getParam("namespace", ros_ns);
+	}
+	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/search_results").c_str(), 1);
+	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, &yolo_callback);
 	ros::Rate rate(4.0);
+	InitMatrixes();
 	while (ros::ok())
 	{
-		if(ekf.init == true)
+		if (ekf.isInit())
 		{
-			ekf.Predict();
+			ekf.predict();
+			pub.publish(sv);
 		}
 	}
+}
+
+void InitMatrixes()
+{
+	A.fill(0);
+	A(4, 1) = 1;
+	A(5, 2) = 1;
+	A(6, 3) = 1;
+	A(7, 7) = 1;
+
+	C.fill(0);
+
+	Q.fill(0);
+	Q(4, 4) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
+	Q(5, 5) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
+	Q(6, 6) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
+	Q(7, 7) = 1 / 100000;
+
+	R.fill(0);
+	R(1, 1) = (THETA_1 ^ 2) / 2;
+	R(2, 2) = (THETA_2 ^ 2) / 2;
+	R(3, 3) = (THETA_3 ^ 2) / 2;
+
+	P.fill(0);
+	P(1, 1) = 12.5;
+	P(2, 2) = 12.5;
+	P(3, 3) = 12.5;
+	P(4, 4) = 50;
+	P(5, 5) = 50;
+	P(6, 6) = 50;
+	P(7, 7) = 1 / 20;
+}
+
+Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
+{
+	Eigen::MatrixXd C_n(m, n);
+	C_n.fill(0);
+	a3dp = get_current_location(); //drones
+	// using vector X calculate all C values and return it;
+	return C_n;
 }

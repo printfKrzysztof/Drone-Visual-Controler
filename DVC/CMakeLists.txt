@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(dvc)
-
+add_definitions(-std=c++11)
 set(Eigen3_DIR /lib/cmake/eigen3)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -32,7 +32,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
 )
-
 
 
 #############
@@ -99,7 +98,7 @@ target_link_libraries(prey_control ${catkin_LIBRARIES})
 add_executable(predator_main_controller src/predator_main_controller.cpp)
 target_link_libraries(predator_main_controller ${catkin_LIBRARIES})
 
-add_executable(filtration src/filtration.cpp)
+add_executable(filtration src/filtration.cpp src/kalman.cpp)
 target_link_libraries(filtration ${catkin_LIBRARIES})
 
 add_executable(learning_session src/learning_session.cpp)
@@ -107,6 +106,3 @@ target_link_libraries(learning_session ${catkin_LIBRARIES})
 
 add_executable(pilot src/pilot.cpp)
 target_link_libraries(pilot ${catkin_LIBRARIES})
-
-add_executable(kalman_filter src/kalman_filter.cpp src/kalman-test.cpp)
-target_link_libraries(kalman_filter ${catkin_LIBRARIES})

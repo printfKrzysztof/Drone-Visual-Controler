@@ -51,6 +51,7 @@ add_message_files(
   FILES
   SearchResult.msg
   SearchResults.msg
+  StatesVector.msg
  )
 
 ## Generate services in the 'srv' folder

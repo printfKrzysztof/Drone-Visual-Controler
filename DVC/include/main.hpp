@@ -15,6 +15,7 @@
 #include <ros/ros.h>
 #include <darknet_ros_msgs/BoundingBoxes.h>
 #include <dvc_msgs/SearchResults.h>
+#include <dvc_msgs/StatesVector.h>
 #include <string>
 #include <std_msgs/Char.h>
 #include <std_msgs/String.h>

@@ -12,7 +12,7 @@
 #include <vector>
 #include <Eigen/Dense>
 
-#include "kalman.hpp"
+#include "kalman_filter.h"
 
 int main(int argc, char* argv[]) {
 
