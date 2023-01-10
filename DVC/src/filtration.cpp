@@ -10,6 +10,7 @@
  */
 
 #include <main.hpp>
+#include <cmath>
 #include "config.h"
 #include "kalman.hpp"
 #include "gnc_functions.hpp"
@@ -148,7 +149,22 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
 {
 	Eigen::MatrixXd C_n(m, n);
 	C_n.fill(0);
-	a3dp = get_current_location(); //drones
-	// using vector X calculate all C values and return it;
+	a3dp = get_current_location(); // drones
+	float x_d = a3dp.x;
+	float y_d = a3dp.y;
+	float z_d = a3dp.z;
+	float x_frommatrix = X(1, 1);
+	float y_frommatrix = X(1, 2);
+	float z_frommatrix = X(1, 3);
+	float r = X(1, 7);
+	C(1, 1) = ((2 * x_frommatrix - 2 * x_d) * (y_frommatrix - y_d)) / (2 * pow((pow((x_frommatrix - x_d), 2) + pow((y_frommatrix - y_d), 2)), (3 / 2)) * pow((1 - pow((y_frommatrix - y_d), 2) / (pow((x_frommatrix - x_d), 2.0) + pow((y_frommatrix - y_d), 2))), (1 / 2)));
+	C(2, 1) = ((y_frommatrix - y_d) * (2 * y_frommatrix - 2 * y_d) / (2 * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)) - pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), -0.5)) / pow(1 - pow(y_frommatrix - y_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)), 0.5);
+
+	C(1, 2) = (z_frommatrix - z_d) * (2 * x_frommatrix - 2 * x_d) / (2 * ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)));
+	C(2, 2) = (z_frommatrix - z_d) * (2 * y_frommatrix - 2 * y_d) / (2 * ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), (1.5))));
+	C(3, 2) = -1 / ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * sqrt(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)));
+	C(1, 3) = (-((((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * pow((r) + (x_frommatrix) - (x_d), 2)) + ((y_d) - (y_frommatrix)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1) * pow((r) - (x_frommatrix) + (x_d), 2))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))) - ((y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * pow(r + x_frommatrix - x_d, 2)) + (y_d - y_frommatrix) / ((pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1) * pow(r - x_frommatrix + x_d, 2))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))));
+	C(2, 3) = ((1 / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * ((r) + (x_frommatrix) - (x_d))) + 1 / (((r) - (x_frommatrix) + (x_d)) * (pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) + (1 / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * (r + x_frommatrix - x_d)) + 1 / ((r - x_frommatrix + x_d) * (pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))));
+	C(7, 3) = (-((((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * pow((r) + (x_frommatrix) - (x_d), 2)) + ((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1) * pow((r) - (x_frommatrix) + (x_d), 2))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))) - ((y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * pow(r + x_frommatrix - x_d, 2)) + (y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1) * pow(r - x_frommatrix + x_d, 2))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))))); // using vector X calculate all C values and return it;
 	return C_n;
 }
