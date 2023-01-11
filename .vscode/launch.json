@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "ROS: Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "${workspaceFolder}/DVC/launch/dronevisualsim.launch"
+        },
+        {
+            "name": "Ros Debuger",
+            "type": "ros",
+            "request": "attach",
+            
+        }
+    ],
+    "version": "2.0.0"
+}

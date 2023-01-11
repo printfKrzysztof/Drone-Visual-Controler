@@ -66,7 +66,7 @@ public:
    * @param R_in 
    * @param P_in 
    */
-  void init(double t0, const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
+  void init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
             const Eigen::MatrixXd &C_in,
             const Eigen::MatrixXd &Q_in,
             const Eigen::MatrixXd &R_in,
