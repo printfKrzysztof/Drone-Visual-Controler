@@ -465,3 +465,18 @@ int init_publisher_subscriber(ros::NodeHandle controlnode)
 	command_client = controlnode.serviceClient<mavros_msgs::CommandLong>((ros_namespace + "/mavros/cmd/command").c_str());
 	return 0;
 }
+
+int init_subscriber_only(ros::NodeHandle controlnode)
+{
+	std::string ros_namespace;
+	if (!controlnode.hasParam("namespace"))
+	{
+
+		ROS_INFO("using default namespace");
+	}else{
+		controlnode.getParam("namespace", ros_namespace);
+		ROS_INFO("using namespace %s", ros_namespace.c_str());
+	}
+	currentPos = controlnode.subscribe<nav_msgs::Odometry>((ros_namespace + "/mavros/global_position/local").c_str(), 10, pose_cb);
+	return 0;
+}

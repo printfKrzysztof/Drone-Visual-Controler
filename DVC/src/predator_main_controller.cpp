@@ -24,12 +24,12 @@ std_msgs::String data_to_pilot;
 
 // Discrete LTI projectile motion, measuring position only
 
-void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
+void detection_cb(const dvc_msgs::StatesVector::ConstPtr &msg)
 {
 
+    
     // ROS_INFO("Recived detection");
-    for (const auto &search_result_auto : msg->search_results)
-    {
+   
         if (!(flags & FLAG_USER_LOCKED))
         {
             data_to_pilot.data.clear();
@@ -41,12 +41,12 @@ void detection_cb(const dvc_msgs::SearchResults::ConstPtr &msg)
         {
             a3dpoint = get_current_location();
             WayPoint.psi = get_current_heading();
-            WayPoint.x = a3dpoint.x + search_result_auto.distance_prediction * sin(M_PI / 180 * (search_result_auto.angle - WayPoint.psi)); // s)earch_result_auto.distance_prediction;
-            WayPoint.y = a3dpoint.y + search_result_auto.distance_prediction * cos(M_PI / 180 * (search_result_auto.angle - WayPoint.psi));
-            WayPoint.z = a3dpoint.z + search_result_auto.height_correction;
-            WayPoint.psi = get_current_heading() - search_result_auto.angle;
+            WayPoint.x = msg->x; // s)earch_result_auto.distance_prediction;
+            WayPoint.y = msg->y;
+            WayPoint.z = msg->z;
+           // WayPoint.psi = get_current_heading() - search_result_auto.angle;
         }
-    }
+    
 }
 
 void pilot_cb(const std_msgs::Char::ConstPtr &msg)
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("PREDATOR INITIALIZED - READY TO FLY");
 
-    ros::Subscriber sub = gnc_node.subscribe("/predator/filtration/search_results", 1, detection_cb);
+    ros::Subscriber sub = gnc_node.subscribe("/predator/filtration/StatesVector", 1, detection_cb);
     ros::Subscriber sub2 = gnc_node.subscribe("/Pilot", 1, pilot_cb);
     ros::Publisher pub_to_pilot = gnc_node.advertise<std_msgs::String>("/predator/ToPilot", 1);
 

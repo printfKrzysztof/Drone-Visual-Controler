@@ -43,7 +43,6 @@
  * 1. f1: axy =
  */
 
-KalmanFilter ekf;
 geometry_msgs::Point a3dp;
 
 int n = 7;						// Number of states
@@ -56,8 +55,9 @@ Eigen::MatrixXd Q(n, n); // Process noise covariance
 Eigen::MatrixXd R(m, m); // Measurement noise covariance
 Eigen::MatrixXd P(n, n); // Estimate error covariance
 
-Eigen::VectorXd x(n, 1);
-Eigen::VectorXd z(1, m);
+Eigen::VectorXd x(n);
+Eigen::VectorXd z(m);
+KalmanFilter ekf(0, A, C, Q, R, P);
 void InitMatrixes();
 Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X);
 //  {
@@ -68,6 +68,8 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X);
 extern uint8_t flags;
 void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 {
+	// ROS_INFO("CALLBACK");
+
 	for (const auto &bounding_box_auto : msg->bounding_boxes)
 	{
 		int centre_x = (int)(bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
@@ -75,15 +77,30 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		// 271 -> 0,5 pi rad (90 deg)
 
 		int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin);
+		z(1) = centre_x;
+		z(2) = centre_y;
+		z(3) = size;
 	}
 	if (ekf.isInit())
 	{
+		ROS_INFO("UPDATE");
+		C = CalculateCfromX(ekf.state());
 		ekf.update(z, dt, A, C);
 	}
 	else
 	{
-		ekf.init();
+		ROS_INFO("INIT");
+
+		x(1) = 3;
+		x(2) = 0;
+		x(3) = 0;
+		x(4) = 0;
+		x(5) = 0;
+		x(6) = 0;
+		x(7) = 0.4;
+		ekf.init(0, x, A, C, Q, R, P);
 	}
+
 }
 
 int main(int argc, char **argv)
@@ -91,6 +108,9 @@ int main(int argc, char **argv)
 	dvc_msgs::StatesVector sv;
 	ros::init(argc, argv, "filtration");
 	ros::NodeHandle filtration("~");
+
+	init_subscriber_only(filtration);
+
 	std::string ros_ns;
 	if (!filtration.hasParam("namespace"))
 	{
@@ -100,18 +120,34 @@ int main(int argc, char **argv)
 	{
 		filtration.getParam("namespace", ros_ns);
 	}
-	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/search_results").c_str(), 1);
-	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, &yolo_callback);
-	ros::Rate rate(4.0);
 	InitMatrixes();
+	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/StatesVector").c_str(), 1);
+	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, yolo_callback);
+	ros::Rate rate(REFRESH_RATE);
 	while (ros::ok())
 	{
+		ros::spinOnce();
+		rate.sleep();
+		// ROS_INFO("WE ARE IN MAIN: %f", dt);
 		if (ekf.isInit())
 		{
+			ROS_INFO("PREDICT");
 			ekf.predict();
+			dt++;
+			x = ekf.state();
+
+			sv.x = x(1);
+			sv.y = x(2);
+			sv.z = x(3);
+			sv.Vx = x(4);
+			sv.Vy = x(5);
+			sv.Vz = x(6);
+			sv.r = x(7);
+
 			pub.publish(sv);
 		}
 	}
+	return 0;
 }
 
 void InitMatrixes()
@@ -120,10 +156,10 @@ void InitMatrixes()
 	A(4, 1) = 1;
 	A(5, 2) = 1;
 	A(6, 3) = 1;
-	A(7, 7) = 1;
+	//A(7, 7) = 1;
 
 	C.fill(0);
-
+	C() //ADD INITIALIZED VALUES
 	Q.fill(0);
 	Q(4, 4) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
 	Q(5, 5) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
@@ -153,11 +189,11 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
 	float x_d = a3dp.x;
 	float y_d = a3dp.y;
 	float z_d = a3dp.z;
-	float x_frommatrix = X(1, 1);
-	float y_frommatrix = X(1, 2);
-	float z_frommatrix = X(1, 3);
-	float r = X(1, 7);
-	C(1, 1) = ((2 * x_frommatrix - 2 * x_d) * (y_frommatrix - y_d)) / (2 * pow((pow((x_frommatrix - x_d), 2) + pow((y_frommatrix - y_d), 2)), (3 / 2)) * pow((1 - pow((y_frommatrix - y_d), 2) / (pow((x_frommatrix - x_d), 2.0) + pow((y_frommatrix - y_d), 2))), (1 / 2)));
+	float x_frommatrix = X(1);
+	float y_frommatrix = X(2);
+	float z_frommatrix = X(3);
+	float r = X(7);
+	C(1, 1) = (((2 * x_frommatrix - 2 * x_d) * (y_frommatrix - y_d)) / (2 * pow((pow((x_frommatrix - x_d), 2) + pow((y_frommatrix - y_d), 2)), (3 / 2)) * pow((1 - pow((y_frommatrix - y_d), 2) / (pow((x_frommatrix - x_d), 2.0) + pow((y_frommatrix - y_d), 2))), (1 / 2))))/X_TO_DEG;
 	C(2, 1) = ((y_frommatrix - y_d) * (2 * y_frommatrix - 2 * y_d) / (2 * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)) - pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), -0.5)) / pow(1 - pow(y_frommatrix - y_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)), 0.5);
 
 	C(1, 2) = (z_frommatrix - z_d) * (2 * x_frommatrix - 2 * x_d) / (2 * ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)));
@@ -167,4 +203,5 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
 	C(2, 3) = ((1 / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * ((r) + (x_frommatrix) - (x_d))) + 1 / (((r) - (x_frommatrix) + (x_d)) * (pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) + (1 / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * (r + x_frommatrix - x_d)) + 1 / ((r - x_frommatrix + x_d) * (pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))));
 	C(7, 3) = (-((((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * pow((r) + (x_frommatrix) - (x_d), 2)) + ((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1) * pow((r) - (x_frommatrix) + (x_d), 2))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))) - ((y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * pow(r + x_frommatrix - x_d, 2)) + (y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1) * pow(r - x_frommatrix + x_d, 2))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))))); // using vector X calculate all C values and return it;
 	return C_n;
+	//ADD X TO DEG CONVERSION
 }
