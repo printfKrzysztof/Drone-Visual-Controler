@@ -12,13 +12,13 @@
 
 KalmanFilter::KalmanFilter(
     double dt,
-    const Eigen::MatrixXd &A,
+    const Eigen::MatrixXd &F,
     const Eigen::MatrixXd &C,
     const Eigen::MatrixXd &Q,
     const Eigen::MatrixXd &R,
     const Eigen::MatrixXd &P)
-    : A(A), C(C), Q(Q), R(R), P0(P),
-      m(C.rows()), n(A.rows()), dt(dt), initialized(false),
+    : F(F), C(C), Q(Q), R(R), P0(P),
+      m(C.rows()), n(F.rows()), dt(dt), initialized(false),
       I(n, n), x_hat(n), x_hat_new(n)
 {
   I.setIdentity();
@@ -26,7 +26,7 @@ KalmanFilter::KalmanFilter(
 
 KalmanFilter::KalmanFilter() {}
 
-void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
+void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &F_in,
                         const Eigen::MatrixXd &C_in,
                         const Eigen::MatrixXd &Q_in,
                         const Eigen::MatrixXd &R_in,
@@ -34,7 +34,7 @@ void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
 {
   x_hat = x0;
   P = P0;
-  A = A_in;
+  F = F_in;
   C = C_in;
   Q = Q_in;
   R = R_in;
@@ -53,18 +53,19 @@ void KalmanFilter::init()
 
 void KalmanFilter::predict()
 {
+  // no need to calculate new matrix F as this is linear solution
   if (!initialized)
   {
   }
   else
   {
     // Use the state using the state transition matrix
-    x_hat = A * x_hat;
+    x_hat = F * x_hat;
     // Update the covariance matrix using the process noise and state transition matrix
-    P = A * P * A.transpose() + Q;
+    P = F * P * F.transpose() + Q;
   }
 }
-void KalmanFilter::update(const Eigen::VectorXd &y, const Eigen::MatrixXd &C_new)
+void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new)
 {
 
   if (!initialized)
@@ -72,37 +73,19 @@ void KalmanFilter::update(const Eigen::VectorXd &y, const Eigen::MatrixXd &C_new
   }
   else
   {
-    /*
-  MatrixXd Ct = C_.transpose();
-  MatrixXd PCt = P_ * Ct;
 
-  VectorXd y = z - C_ * x_;
-  MatrixXd S = C_ * PCt + R_;
-  MatrixXd K = PCt * S.inverse();
-
-  // Update State
-  x_ = x_ + (K * y);
-  // Update covariance matrix
-  long x_size = x_.size();
-  MatrixXd I = MatrixXd::Identity(x_size, x_size);
-  P_ = (I - K * C_) * P_;
-  */
-    // x_hat_new = A * x_hat;
-    C = C_new;
-    P = A * P * A.transpose() + Q;
-    K = P * C.transpose() * (C * P * C.transpose() + R).inverse();
-    x_hat_new += K * (y - C * x_hat_new);
-    P = (I - K * C) * P;
-    x_hat = x_hat_new;
-
+    C = C_new;                                                     // Replace old matrix with updated one
+    K = P * C.transpose() * (C * P * C.transpose() + R).inverse(); // Kalmans Matrix
+    x_hat_new += K * (y_real - y_guess);                           // Innovation
+    x_hat = x_hat_new;                                             // Applying new value to x vector
+    P = (I - K * C) * P;                                           // Calculating new P matrix
   }
 }
 
-void KalmanFilter::update(const Eigen::VectorXd &y, double dt, const Eigen::MatrixXd A, const Eigen::MatrixXd &C_new)
+void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, double dt, const Eigen::MatrixXd &C_new)
 {
-
-  this->A = A;
-  update(y, C_new);
+  this->dt += dt; //Adding time so we can track it easier
+  update(y_real, y_guess, C_new);
 }
 
 bool KalmanFilter::isInit(void)

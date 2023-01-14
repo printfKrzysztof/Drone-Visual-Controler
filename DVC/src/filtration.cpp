@@ -43,28 +43,26 @@
  * 1. f1: axy =
  */
 
-geometry_msgs::Point a3dp;
+geometry_msgs::Point a3dp; // point gettind data from drone
 
 int n = 7;						// Number of states
 int m = 3;						// Number of measurements
 double dt = 1.0 / REFRESH_RATE; // Time step
 
-Eigen::MatrixXd A(n, n); // System dynamics matrix
+Eigen::MatrixXd F(n, n); // System dynamics matrix
 Eigen::MatrixXd C(m, n); // Output matrix
 Eigen::MatrixXd Q(n, n); // Process noise covariance
 Eigen::MatrixXd R(m, m); // Measurement noise covariance
 Eigen::MatrixXd P(n, n); // Estimate error covariance
 
-Eigen::VectorXd x(n);
-Eigen::VectorXd z(m);
-KalmanFilter ekf(0, A, C, Q, R, P);
+Eigen::VectorXd x_hat(n); // state vector
+Eigen::VectorXd y_hat(m); // meassurements vector
+
+KalmanFilter ekf(0, F, C, Q, R, P);
 void InitMatrixes();
 Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X);
-//  {
-//  	Eigen::MatrixXd C(m, n);
-//  	// using vector X calculate all C values and return it;
-//  	return C;
-//  }
+Eigen::VectorXd GuessYfromX(Eigen::VectorXd X);
+
 extern uint8_t flags;
 void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 {
@@ -77,29 +75,29 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		// 271 -> 0,5 pi rad (90 deg)
 
 		int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin);
-		z(1) = centre_x;
-		z(2) = centre_y;
-		z(3) = size;
+		y_hat(1) = centre_x;
+		y_hat(2) = centre_y;
+		y_hat(3) = size;
 	}
 	if (ekf.isInit())
 	{
 		ROS_INFO("UPDATE");
 		C = CalculateCfromX(ekf.state());
-		ekf.update(z, dt, A, C);
+		ekf.update(y_hat, GuessYfromX(ekf.state()), dt, C);
 	}
 	else
 	{
 		ROS_INFO("INIT");
-
-		x(1) = 3;
-		x(2) = 0.04;
-		x(3) = 0.01;
-		x(4) = 0;
-		x(5) = 0;
-		x(6) = 0;
-		x(7) = 0.4;
-		C = C = CalculateCfromX(x);
-		ekf.init(x, A, C, Q, R, P);
+		// Starting values
+		x_hat(1) = 3;
+		x_hat(2) = 0.04;
+		x_hat(3) = 0.01;
+		x_hat(4) = 0;
+		x_hat(5) = 0;
+		x_hat(6) = 0;
+		x_hat(7) = 0.4;
+		C = CalculateCfromX(x_hat);
+		ekf.init(x_hat, F, C, Q, R, P);
 	}
 }
 
@@ -134,15 +132,15 @@ int main(int argc, char **argv)
 			ROS_INFO("PREDICT");
 			ekf.predict();
 			dt++;
-			x = ekf.state();
+			x_hat = ekf.state();
 
-			sv.x = x(1);
-			sv.y = x(2);
-			sv.z = x(3);
-			sv.Vx = x(4);
-			sv.Vy = x(5);
-			sv.Vz = x(6);
-			sv.r = x(7);
+			sv.x = x_hat(1);
+			sv.y = x_hat(2);
+			sv.z = x_hat(3);
+			sv.Vx = x_hat(4);
+			sv.Vy = x_hat(5);
+			sv.Vz = x_hat(6);
+			sv.r = x_hat(7);
 
 			pub.publish(sv);
 		}
@@ -152,32 +150,34 @@ int main(int argc, char **argv)
 
 void InitMatrixes()
 {
-	A.fill(0);
-	A(4, 1) = 1;
-	A(5, 2) = 1;
-	A(6, 3) = 1;
-	A(7, 7) = 1;
+	F.fill(0);
+	F(4, 1) = 1;
+	F(5, 2) = 1;
+	F(6, 3) = 1;
+	F(7, 7) = 1;
+	Eigen::MatrixXd I(n, n); // Identity
+	F = I.Identity(n, n) * F * dt;
 
 	C.fill(0);
 	// C() // ADD INITIALIZED VALUES
 	Q.fill(0);
-	Q(4, 4) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
-	Q(5, 5) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
-	Q(6, 6) = (DELTA_V ^ 2) / (2 * (REFRESH_RATE ^ 2));
+	Q(4, 4) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
+	Q(5, 5) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
+	Q(6, 6) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
 	Q(7, 7) = 1 / 100000;
 
 	R.fill(0);
-	R(1, 1) = (THETA_1 ^ 2) / 2;
-	R(2, 2) = (THETA_2 ^ 2) / 2;
-	R(3, 3) = (THETA_3 ^ 2) / 2;
+	R(1, 1) = (THETA_1 ^ 2);
+	R(2, 2) = (THETA_2 ^ 2);
+	R(3, 3) = (THETA_3 ^ 2);
 
 	P.fill(0);
-	P(1, 1) = 12.5;
-	P(2, 2) = 12.5;
-	P(3, 3) = 12.5;
-	P(4, 4) = 50;
-	P(5, 5) = 50;
-	P(6, 6) = 50;
+	P(1, 1) = 25;
+	P(2, 2) = 25;
+	P(3, 3) = 25;
+	P(4, 4) = 100;
+	P(5, 5) = 100;
+	P(6, 6) = 100;
 	P(7, 7) = 1 / 20;
 }
 
@@ -185,49 +185,47 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
 {
 	Eigen::MatrixXd C_n(m, n);
 	C_n.fill(0);
-	a3dp = get_current_location(); // drones
+
+	a3dp = get_current_location();
 	float x_d = a3dp.x;
 	float y_d = a3dp.y;
 	float z_d = a3dp.z;
-	float x_frommatrix = X(1);
-	float y_frommatrix = X(2);
-	float z_frommatrix = X(3);
+	float x = X(1);
+	float y = X(2);
+	float z = X(3);
 	float r = X(7);
-	volatile float temp;
-	temp = (((2 * x_frommatrix - 2 * x_d) * (y_frommatrix - y_d)) / (2 * pow((pow((x_frommatrix - x_d), 2) + pow((y_frommatrix - y_d), 2)), (3 / 2)) * pow((1 - pow((y_frommatrix - y_d), 2) / (pow((x_frommatrix - x_d), 2.0) + pow((y_frommatrix - y_d), 2))), (1 / 2)))) / X_TO_DEG;
-	C(1, 1) = temp;
-	temp = (((y_frommatrix - y_d) * (2 * y_frommatrix - 2 * y_d) / (2 * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)) - pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), -0.5)) / pow(1 - pow(y_frommatrix - y_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)), 0.5)) / X_TO_DEG;
-	C(2, 1) = temp;
-	temp = ((z_frommatrix - z_d) * (2 * x_frommatrix - 2 * x_d) / (2 * ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), 1.5)))) / Y_TO_DEG;
-	C(1, 2) = temp;
-	temp = ((z_frommatrix - z_d) * (2 * y_frommatrix - 2 * y_d) / (2 * ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * pow(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2), (1.5))))) / Y_TO_DEG;
-	C(2, 2) = temp;
-	temp = (-1 / ((pow(z_frommatrix - z_d, 2) / (pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)) + 1) * sqrt(pow(x_frommatrix - x_d, 2) + pow(y_frommatrix - y_d, 2)))) / Y_TO_DEG;
-	C(3, 2) = temp;
-	temp = ((-((((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * pow((r) + (x_frommatrix) - (x_d), 2)) + ((y_d) - (y_frommatrix)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1) * pow((r) - (x_frommatrix) + (x_d), 2))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))) - ((y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * pow(r + x_frommatrix - x_d, 2)) + (y_d - y_frommatrix) / ((pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1) * pow(r - x_frommatrix + x_d, 2))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))))) / Y_TO_DEG;
-	C(1, 3) = temp;
-	temp = (((1 / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * ((r) + (x_frommatrix) - (x_d))) + 1 / (((r) - (x_frommatrix) + (x_d)) * (pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) + (1 / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * (r + x_frommatrix - x_d)) + 1 / ((r - x_frommatrix + x_d) * (pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))))) / Y_TO_DEG;
-	C(2, 3) = temp;
-	temp = ((-((((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) + (x_frommatrix) - (x_d), 2) + 1) * pow((r) + (x_frommatrix) - (x_d), 2)) + ((y_frommatrix) - (y_d)) / ((pow((y_frommatrix) - (y_d), 2) / pow((r) - (x_frommatrix) + (x_d), 2) + 1) * pow((r) - (x_frommatrix) + (x_d), 2))) * (atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d)))) - ((y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r + x_frommatrix - x_d, 2) + 1) * pow(r + x_frommatrix - x_d, 2)) + (y_frommatrix - y_d) / ((pow(y_frommatrix - y_d, 2) / pow(r - x_frommatrix + x_d, 2) + 1) * pow(r - x_frommatrix + x_d, 2))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))) / (2 * sqrt((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d)) + atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))) * ((atan((y_frommatrix - y_d) / (r + x_frommatrix - x_d))) + (atan((y_frommatrix - y_d) / (r - x_frommatrix + x_d))))))) / Y_TO_DEG; // using vector X calculate all C values and return it;
-	C(7, 3) = temp;
 
-	if (isnan(C(1, 1)))
-		C(1, 1) = 0;
-	if (isnan(C(2, 1)))
-		C(2, 1) = 0;
-	if (isnan(C(1, 2)))
-		C(1, 2) = 0;
-	if (isnan(C(2, 2)))
-		C(2, 2) = 0;
-	if (isnan(C(3, 2)))
-		C(3, 2) = 0;
-	if (isnan(C(1, 3)))
-		C(1, 3) = 0;
-	if (isnan(C(2, 3)))
-		C(2, 3) = 0;
-	if (isnan(C(7, 3)))
-		C(7, 3) = 0;
+	C(1, 1) = (RAD_TO_X * (y - y_d)) / (pow(x - x_d, 2) + pow(y - y_d, 2));
+	C(1, 2) = -(RAD_TO_X * (x - x_d)) / (pow(x - x_d, 2) + pow(y - y_d, 2));
+	C(2, 1) = (RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * (z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
+	C(2, 2) = (RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * (z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
+	C(2, 3) = -(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2));
+	C(3, 1) = -(RAD_TO_X * r * (2 * x - 2 * x_d)) / pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2));
+	C(3, 2) = -(RAD_TO_X * r * (2 * y - 2 * y_d)) / pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2));
+	C(3, 7) = RAD_TO_X / pow((pow(x - x_d, 2) + pow(y - y_d, 2)), (1 / 2));
+
 	ROS_INFO("C[%f, %f, %f, %f]", C(1, 1), C(2, 1), C(1, 2), C(1, 3));
+
 	return C_n;
-	// ADD X TO DEG CONVERSION
+}
+
+Eigen::VectorXd GuessYfromX(Eigen::VectorXd X)
+{
+	Eigen::VectorXd Y(m);
+
+	a3dp = get_current_location();
+	float phi_d = get_current_heading();
+	float x_d = a3dp.x;
+	float y_d = a3dp.y;
+	float z_d = a3dp.z;
+	float x = X(1);
+	float y = X(2);
+	float z = X(3);
+	float r = X(7);
+
+	Y(1) = 0;
+	Y(2) = 0;
+	Y(3) = 0;
+	
+	return Y;
 }

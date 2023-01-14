@@ -68,5 +68,9 @@
         "core": "cpp",
         "dense": "cpp"
     },
-    "cmake.sourceDirectory": "${workspaceFolder}/DVC"
+    "cmake.sourceDirectory": "${workspaceFolder}/DVC",
+    "python.autoComplete.extraPaths": [
+        "/home/printfkrzysztof/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 }

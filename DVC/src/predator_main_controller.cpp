@@ -27,26 +27,24 @@ std_msgs::String data_to_pilot;
 void detection_cb(const dvc_msgs::StatesVector::ConstPtr &msg)
 {
 
-    
     // ROS_INFO("Recived detection");
-   
-        if (!(flags & FLAG_USER_LOCKED))
-        {
-            data_to_pilot.data.clear();
-            data_to_pilot.data.append("Wykryto obiekt");
-            data_to_pilot.data.append("  --> Press <- to lock in \n");
-            flags |= FLAG_FROM_YOLO_M;
-        }
-        else
-        {
-            a3dpoint = get_current_location();
-            WayPoint.psi = get_current_heading();
-            WayPoint.x = msg->x; // s)earch_result_auto.distance_prediction;
-            WayPoint.y = msg->y;
-            WayPoint.z = msg->z;
-           // WayPoint.psi = get_current_heading() - search_result_auto.angle;
-        }
-    
+
+    if (!(flags & FLAG_USER_LOCKED))
+    {
+        data_to_pilot.data.clear();
+        data_to_pilot.data.append("Wykryto obiekt");
+        data_to_pilot.data.append("  --> Press <- to lock in \n");
+        flags |= FLAG_FROM_YOLO_M;
+    }
+    else
+    {
+        a3dpoint = get_current_location();
+        WayPoint.psi = get_current_heading();
+        WayPoint.x = msg->x; // s)earch_result_auto.distance_prediction;
+        WayPoint.y = msg->y;
+        WayPoint.z = msg->z;
+        // WayPoint.psi = get_current_heading() - search_result_auto.angle;
+    }
 }
 
 void pilot_cb(const std_msgs::Char::ConstPtr &msg)
@@ -69,7 +67,6 @@ DVC_STATE state;
 int main(int argc, char **argv)
 {
 
-    
     // initialize ros
     ros::init(argc, argv, "gnc_node");
     ros::NodeHandle gnc_node("~");
@@ -128,6 +125,8 @@ int main(int argc, char **argv)
             break;
 
         case DVC_STATE_AIM:
+            ROS_INFO_ONCE("Getting in position");
+            set_destination(WayPoint.x, WayPoint.y, WayPoint.z, WayPoint.psi);
             break;
 
         case DVC_STATE_LANDING:
