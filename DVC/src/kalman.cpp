@@ -63,6 +63,7 @@ void KalmanFilter::predict()
     x_hat = F * x_hat;
     // Update the covariance matrix using the process noise and state transition matrix
     P = F * P * F.transpose() + Q;
+   // std::cout << "P" << P << std::endl;
   }
 }
 void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new)
@@ -74,17 +75,26 @@ void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &
   else
   {
 
-    C = C_new;                                                     // Replace old matrix with updated one
+    C << C_new;                                                    // Replace old matrix with updated one
     K = P * C.transpose() * (C * P * C.transpose() + R).inverse(); // Kalmans Matrix
     x_hat_new += K * (y_real - y_guess);                           // Innovation
     x_hat = x_hat_new;                                             // Applying new value to x vector
     P = (I - K * C) * P;                                           // Calculating new P matrix
+    /*
+    std::cout << "F" << F << std::endl
+              << "C" << C << std::endl
+              << "Q" << Q << std::endl
+              << "R" << R << std::endl
+              << "P" << P << std::endl
+              << "X" << x_hat << std::endl
+              << "K" << K << std::endl;
+    */
   }
 }
 
 void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, double dt, const Eigen::MatrixXd &C_new)
 {
-  this->dt += dt; //Adding time so we can track it easier
+  this->dt += dt; // Adding time so we can track it easier
   update(y_real, y_guess, C_new);
 }
 

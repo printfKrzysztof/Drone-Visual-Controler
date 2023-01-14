@@ -15,6 +15,12 @@
         },
         {
             "type": "shell",
+            "label": "Kalman",
+            "group": "none",
+            "command": "roslaunch dvc debug_kalman.launch  "
+        },
+        {
+            "type": "shell",
             "label": "predator",
             "group": "none",
             "command": "./startpredator.sh"

@@ -60,8 +60,8 @@ Eigen::VectorXd y_hat(m); // meassurements vector
 
 KalmanFilter ekf(0, F, C, Q, R, P);
 void InitMatrixes();
-Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X);
-Eigen::VectorXd GuessYfromX(Eigen::VectorXd X);
+Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X);
+Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X);
 
 extern uint8_t flags;
 void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
@@ -75,32 +75,42 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		// 271 -> 0,5 pi rad (90 deg)
 
 		int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin);
-		y_hat(1) = centre_x;
-		y_hat(2) = centre_y;
-		y_hat(3) = size;
+		y_hat(1 - 1) = centre_x;
+		y_hat(2 - 1) = centre_y;
+		y_hat(3 - 1) = size;
 	}
 	if (ekf.isInit())
 	{
 		ROS_INFO("UPDATE");
-		C = CalculateCfromX(ekf.state());
-		ekf.update(y_hat, GuessYfromX(ekf.state()), dt, C);
+		x_hat = ekf.state();
+		C = CalculateCfromX(x_hat);
+		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
 	}
 	else
 	{
 		ROS_INFO("INIT");
 		// Starting values
-		x_hat(1) = 3;
-		x_hat(2) = 0.04;
-		x_hat(3) = 0.01;
-		x_hat(4) = 0;
-		x_hat(5) = 0;
-		x_hat(6) = 0;
-		x_hat(7) = 0.4;
+		x_hat(1 - 1) = 3;
+		x_hat(2 - 1) = 0.04;
+		x_hat(3 - 1) = 0.01;
+		x_hat(4 - 1) = 0;
+		x_hat(5 - 1) = 0;
+		x_hat(6 - 1) = 0;
+		x_hat(7 - 1) = 0.4;
 		C = CalculateCfromX(x_hat);
 		ekf.init(x_hat, F, C, Q, R, P);
+		/*
+		std::cout << F << std::endl
+				  << C << std::endl;
+		<< Q << std::endl
+		<< R << std::endl
+		<< P << std::endl
+		<< x_hat << std::endl
+		<< y_hat << std::endl;
+		*/
+		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
 	}
 }
-
 int main(int argc, char **argv)
 {
 	dvc_msgs::StatesVector sv;
@@ -151,65 +161,63 @@ int main(int argc, char **argv)
 void InitMatrixes()
 {
 	F.fill(0);
+	F(3, 0) = 1;
 	F(4, 1) = 1;
 	F(5, 2) = 1;
-	F(6, 3) = 1;
-	F(7, 7) = 1;
+
 	Eigen::MatrixXd I(n, n); // Identity
 	F = I.Identity(n, n) * F * dt;
 
 	C.fill(0);
 	// C() // ADD INITIALIZED VALUES
 	Q.fill(0);
-	Q(4, 4) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
-	Q(5, 5) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
-	Q(6, 6) = (DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
-	Q(7, 7) = 1 / 100000;
+	Q(3, 3) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
+	Q(4, 4) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
+	Q(5, 5) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
+	Q(6, 6) = (double)1 / 100000;
 
 	R.fill(0);
-	R(1, 1) = (THETA_1 ^ 2);
-	R(2, 2) = (THETA_2 ^ 2);
-	R(3, 3) = (THETA_3 ^ 2);
+	R(0, 0) = (THETA_1 ^ 2);
+	R(1, 1) = (THETA_2 ^ 2);
+	R(2, 2) = (THETA_3 ^ 2);
 
 	P.fill(0);
-	P(1, 1) = 25;
-	P(2, 2) = 25;
-	P(3, 3) = 25;
-	P(4, 4) = 100;
-	P(5, 5) = 100;
-	P(6, 6) = 100;
-	P(7, 7) = 1 / 20;
+	P(1 - 1, 1 - 1) = 25;
+	P(2 - 1, 2 - 1) = 25;
+	P(3 - 1, 3 - 1) = 25;
+	P(4 - 1, 4 - 1) = 100;
+	P(5 - 1, 5 - 1) = 100;
+	P(6 - 1, 6 - 1) = 100;
+	P(7 - 1, 7 - 1) = (double)1 / 20;
 }
 
-Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd X)
+Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
 {
 	Eigen::MatrixXd C_n(m, n);
 	C_n.fill(0);
 
 	a3dp = get_current_location();
-	float x_d = a3dp.x;
-	float y_d = a3dp.y;
-	float z_d = a3dp.z;
-	float x = X(1);
-	float y = X(2);
-	float z = X(3);
-	float r = X(7);
-
-	C(1, 1) = (RAD_TO_X * (y - y_d)) / (pow(x - x_d, 2) + pow(y - y_d, 2));
-	C(1, 2) = -(RAD_TO_X * (x - x_d)) / (pow(x - x_d, 2) + pow(y - y_d, 2));
-	C(2, 1) = (RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * (z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
-	C(2, 2) = (RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * (z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
-	C(2, 3) = -(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2));
-	C(3, 1) = -(RAD_TO_X * r * (2 * x - 2 * x_d)) / pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2));
-	C(3, 2) = -(RAD_TO_X * r * (2 * y - 2 * y_d)) / pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2));
-	C(3, 7) = RAD_TO_X / pow((pow(x - x_d, 2) + pow(y - y_d, 2)), (1 / 2));
-
-	ROS_INFO("C[%f, %f, %f, %f]", C(1, 1), C(2, 1), C(1, 2), C(1, 3));
+	double x_d = a3dp.x;
+	double y_d = a3dp.y;
+	double z_d = a3dp.z;
+	double x = X(1 - 1);
+	double y = X(2 - 1);
+	double z = X(3 - 1);
+	double r = X(7 - 1);
+	std::cout << x_d << y_d << z_d << x << y << z << r;
+	C_n(1 - 1, 1 - 1) = (double)(RAD_TO_X * (y - y_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)));
+	C_n(1 - 1, 2 - 1) = (double)-(RAD_TO_X * (x - x_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)));
+	C_n(2 - 1, 1 - 1) = (double)(RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
+	C_n(2 - 1, 2 - 1) = (double)(RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
+	C_n(2 - 1, 3 - 1) = (double)-(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2));
+	C_n(3 - 1, 1 - 1) = (double)-(RAD_TO_X * r * (2 * x - 2 * x_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)));
+	C_n(3 - 1, 2 - 1) = (double)-(RAD_TO_X * r * (2 * y - 2 * y_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)));
+	C_n(3 - 1, 7 - 1) = (double)RAD_TO_X / pow((pow(x - x_d, 2) + pow(y - y_d, 2)), (1 / 2));
 
 	return C_n;
 }
 
-Eigen::VectorXd GuessYfromX(Eigen::VectorXd X)
+Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X)
 {
 	Eigen::VectorXd Y(m);
 
@@ -218,14 +226,14 @@ Eigen::VectorXd GuessYfromX(Eigen::VectorXd X)
 	float x_d = a3dp.x;
 	float y_d = a3dp.y;
 	float z_d = a3dp.z;
-	float x = X(1);
-	float y = X(2);
-	float z = X(3);
-	float r = X(7);
+	float x = X(1 - 1);
+	float y = X(2 - 1);
+	float z = X(3 - 1);
+	float r = X(7 - 1);
 
-	Y(1) = 0;
-	Y(2) = 0;
-	Y(3) = 0;
-	
+	Y(1 - 1) = (double)RAD_TO_X * (atan2(x - x_d, y - y_d) - DEG_TO_RAD * phi_d);
+	Y(2 - 1) = (double)RAD_TO_Y * atan2(z_d - z, sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)));
+	Y(3 - 1) = (double)(RAD_TO_X * r) / sqrt(pow(x - x_d, 2) + pow(y - y_d, 2));
+
 	return Y;
 }

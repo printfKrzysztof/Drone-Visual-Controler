@@ -4,7 +4,7 @@
             "name": "ROS: Launch",
             "type": "ros",
             "request": "launch",
-            "target": "${workspaceFolder}/DVC/launch/dronevisualsim.launch"
+            "target": "${workspaceFolder}/DVC/launch/debug_kalman.launch"
         },
         {
             "name": "Ros Debuger",
