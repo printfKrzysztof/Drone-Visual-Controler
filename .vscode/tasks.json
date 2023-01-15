@@ -5,7 +5,10 @@
             "type": "shell",
             "label": "Catkin",
             "command": "catkin build -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=/usr/bin/gcc-8",
-            "group": "build"
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "type": "shell",

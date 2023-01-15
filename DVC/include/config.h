@@ -12,7 +12,8 @@
 #define CONFIG_HEADER
 
 /*---- SOFTWARE ----*/
-#define REFRESH_RATE            60                           // The framerate at which yolo analizes data (Hz)
+#define REFRESH_RATE            5                            // The framerate at which yolo analizes data (Hz)
+//#define DEBUG                                              // Debug program - gives more information about matrixes
 
 /*---- CAMERA ----*/
 #define CAMERA_HORIZONTAL_ANGLE 140                          // Horizontalal degrees of lens

@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 	InitMatrixes();
 	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/StatesVector").c_str(), 1);
 	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, yolo_callback);
-	ros::Rate rate(REFRESH_RATE);
+	ros::Rate rate(5);
 	while (ros::ok())
 	{
 		ros::spinOnce();
@@ -141,16 +141,15 @@ int main(int argc, char **argv)
 		{
 			ROS_INFO("PREDICT");
 			ekf.predict();
-			dt++;
 			x_hat = ekf.state();
 
-			sv.x = x_hat(1);
-			sv.y = x_hat(2);
-			sv.z = x_hat(3);
-			sv.Vx = x_hat(4);
-			sv.Vy = x_hat(5);
-			sv.Vz = x_hat(6);
-			sv.r = x_hat(7);
+			sv.x = x_hat(1-1);
+			sv.y = x_hat(2-1);
+			sv.z = x_hat(3-1);
+			sv.Vx = x_hat(4-1);
+			sv.Vy = x_hat(5-1);
+			sv.Vz = x_hat(6-1);
+			sv.r = x_hat(7-1);
 
 			pub.publish(sv);
 		}
@@ -166,7 +165,7 @@ void InitMatrixes()
 	F(5, 2) = 1;
 
 	Eigen::MatrixXd I(n, n); // Identity
-	F = I.Identity(n, n) * F * dt;
+	F = I.Identity(n, n) + F * dt;
 
 	C.fill(0);
 	// C() // ADD INITIALIZED VALUES
@@ -204,15 +203,30 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
 	double y = X(2 - 1);
 	double z = X(3 - 1);
 	double r = X(7 - 1);
-	std::cout << x_d << y_d << z_d << x << y << z << r;
-	C_n(1 - 1, 1 - 1) = (double)(RAD_TO_X * (y - y_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)));
-	C_n(1 - 1, 2 - 1) = (double)-(RAD_TO_X * (x - x_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)));
-	C_n(2 - 1, 1 - 1) = (double)(RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
-	C_n(2 - 1, 2 - 1) = (double)(RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)));
-	C_n(2 - 1, 3 - 1) = (double)-(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2));
-	C_n(3 - 1, 1 - 1) = (double)-(RAD_TO_X * r * (2 * x - 2 * x_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)));
-	C_n(3 - 1, 2 - 1) = (double)-(RAD_TO_X * r * (2 * y - 2 * y_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)));
+	if (z < 0)
+		z = 0;
+	if (r < 0.1)
+		r = 0.1;
+	if (r > 1)
+		r = 1;
+
+#ifdef DEBUG
+	std::cout << "Calculating C from: " << x_d << y_d << z_d << x << y << z << r;
+#endif // DEBUG
+
+	C_n(1 - 1, 1 - 1) = (double)(RAD_TO_X * (y - y_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
+	C_n(1 - 1, 2 - 1) = (double)-(RAD_TO_X * (x - x_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
+	C_n(2 - 1, 1 - 1) = (double)(RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)) + 0.001);
+	C_n(2 - 1, 2 - 1) = (double)(RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)) + 0.001);
+	C_n(2 - 1, 3 - 1) = (double)-(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2) + 0.001);
+	C_n(3 - 1, 1 - 1) = (double)-(RAD_TO_X * r * (2 * x - 2 * x_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
+	C_n(3 - 1, 2 - 1) = (double)-(RAD_TO_X * r * (2 * y - 2 * y_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
 	C_n(3 - 1, 7 - 1) = (double)RAD_TO_X / pow((pow(x - x_d, 2) + pow(y - y_d, 2)), (1 / 2));
+
+#ifdef DEBUG
+	std::cout << C_n << std::endl
+			  << "That is calculated C";
+#endif // DEBUG
 
 	return C_n;
 }
@@ -230,10 +244,25 @@ Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X)
 	float y = X(2 - 1);
 	float z = X(3 - 1);
 	float r = X(7 - 1);
+	if (z < 0)
+		z = 0;
+	if (r < 0.1)
+		r = 0.1;
+	if (r > 1)
+		r = 1;
+
+#ifdef DEBUG
+	std::cout << "Calculating Y from: " << x_d << y_d << z_d << x << y << z << r << phi_d;
+#endif // DEBUG
 
 	Y(1 - 1) = (double)RAD_TO_X * (atan2(x - x_d, y - y_d) - DEG_TO_RAD * phi_d);
 	Y(2 - 1) = (double)RAD_TO_Y * atan2(z_d - z, sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)));
-	Y(3 - 1) = (double)(RAD_TO_X * r) / sqrt(pow(x - x_d, 2) + pow(y - y_d, 2));
+	Y(3 - 1) = (double)(RAD_TO_X * r) / (sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
+
+#ifdef DEBUG
+	std::cout << Y << std::endl
+			  << "That was calculated Y";
+#endif // DEBUG
 
 	return Y;
 }

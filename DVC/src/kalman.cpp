@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <stdexcept>
-
+#include "config.h"
 #include "kalman.hpp"
 
 KalmanFilter::KalmanFilter(
@@ -59,11 +59,45 @@ void KalmanFilter::predict()
   }
   else
   {
-    // Use the state using the state transition matrix
+// Use the state using the state transition matrix
+#ifdef DEBUG
+
+    std::cout << "BEFORE PREDICTION" << std::endl
+              << "P" << P << std::endl
+              << "X" << x_hat << std::endl;
+
+#endif // DEBUG
     x_hat = F * x_hat;
-    // Update the covariance matrix using the process noise and state transition matrix
+
+    if (x_hat(3 - 1) < 0.1)
+      x_hat(3 - 1) = 0.1; // limit for Z
+
+    if (x_hat(7 - 1) < 0.1)
+      x_hat(7 - 1) = 0.1; // limit for r
+
+    if (x_hat(7 - 1) > 1)
+      x_hat(7 - 1) = 1; // limit for r
+
+    if (x_hat(4 - 1) < -30)
+      x_hat(4 - 1) = -30; // limit for V
+    if (x_hat(4 - 1) > 30)
+      x_hat(4 - 1) = 30; // limit for V
+    if (x_hat(5 - 1) < -30)
+      x_hat(5 - 1) = -30; // limit for V
+    if (x_hat(5 - 1) > 30)
+      x_hat(5 - 1) = 30; // limit for V
+    if (x_hat(6 - 1) < -30)
+      x_hat(6 - 1) = -30; // limit for V
+    if (x_hat(6 - 1) > 30)
+      x_hat(6 - 1) = 30; // limit for V
+    //  Update the covariance matrix using the process noise and state transition matrix
     P = F * P * F.transpose() + Q;
-   // std::cout << "P" << P << std::endl;
+#ifdef DEBUG
+
+    std::cout << "After PREDICTION" << std::endl
+              << "P" << P << std::endl
+              << "X" << x_hat << std::endl;
+#endif // DEBUG
   }
 }
 void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new)
@@ -74,21 +108,57 @@ void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &
   }
   else
   {
+#ifdef DEBUG
 
+    std::cout << "BEFORE UPDATE" << std::endl
+              << "C" << C << std::endl
+              << "P" << P << std::endl
+              << "X" << x_hat << std::endl
+              << "YR" << y_real << std::endl
+              << "YG" << y_guess << std::endl
+              << "K" << K << std::endl;
+
+#endif                                                             // DEBUG
     C << C_new;                                                    // Replace old matrix with updated one
     K = P * C.transpose() * (C * P * C.transpose() + R).inverse(); // Kalmans Matrix
     x_hat_new += K * (y_real - y_guess);                           // Innovation
     x_hat = x_hat_new;                                             // Applying new value to x vector
     P = (I - K * C) * P;                                           // Calculating new P matrix
-    /*
-    std::cout << "F" << F << std::endl
+
+    if (x_hat(3 - 1) < 0.1)
+      x_hat(3 - 1) = 0.1; // limit for Z
+
+    if (x_hat(7 - 1) < 0.1)
+      x_hat(7 - 1) = 0.1; // limit for r
+
+    if (x_hat(7 - 1) > 1)
+      x_hat(7 - 1) = 1; // limit for r
+
+    if (x_hat(4 - 1) < -30)
+      x_hat(4 - 1) = -30; // limit for V
+    if (x_hat(4 - 1) > 30)
+      x_hat(4 - 1) = 30; // limit for V
+    if (x_hat(5 - 1) < -30)
+      x_hat(5 - 1) = -30; // limit for V
+    if (x_hat(5 - 1) > 30)
+      x_hat(5 - 1) = 30; // limit for V
+    if (x_hat(6 - 1) < -30)
+      x_hat(6 - 1) = -30; // limit for V
+    if (x_hat(6 - 1) > 30)
+      x_hat(6 - 1) = 30; // limit for V
+
+#ifdef DEBUG
+
+    std::cout << "After UPDATE" << std::endl
+              << "F" << F << std::endl
               << "C" << C << std::endl
               << "Q" << Q << std::endl
               << "R" << R << std::endl
               << "P" << P << std::endl
               << "X" << x_hat << std::endl
               << "K" << K << std::endl;
-    */
+
+#endif // DEBUG
   }
 }
 
