@@ -16,7 +16,9 @@
 #include "gnc_functions.hpp"
 #include <vector>
 #include <iostream>
+#include <fstream>
 
+std::fstream plik;
 /*
  * We want to know 7 states:
  * Position in x    x
@@ -83,6 +85,7 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 	{
 		ROS_INFO("UPDATE");
 		x_hat = ekf.state();
+		plik << x_hat(0) << "," << x_hat(1) << "," << x_hat(2) << ";";
 		C = CalculateCfromX(x_hat);
 		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
 	}
@@ -129,6 +132,12 @@ int main(int argc, char **argv)
 		filtration.getParam("namespace", ros_ns);
 	}
 	InitMatrixes();
+ 
+	plik.open("/home/printfkrzysztof/pose.txt", std::fstream::in | std::fstream::out | std::fstream::app);
+	if(plik.good() == true)
+	{
+		std::cout << "Poprawnie otwarty plik";
+	}
 	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/StatesVector").c_str(), 1);
 	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, yolo_callback);
 	ros::Rate rate(5);
@@ -143,17 +152,18 @@ int main(int argc, char **argv)
 			ekf.predict();
 			x_hat = ekf.state();
 
-			sv.x = x_hat(1-1);
-			sv.y = x_hat(2-1);
-			sv.z = x_hat(3-1);
-			sv.Vx = x_hat(4-1);
-			sv.Vy = x_hat(5-1);
-			sv.Vz = x_hat(6-1);
-			sv.r = x_hat(7-1);
+			sv.x = x_hat(1 - 1);
+			sv.y = x_hat(2 - 1);
+			sv.z = x_hat(3 - 1);
+			sv.Vx = x_hat(4 - 1);
+			sv.Vy = x_hat(5 - 1);
+			sv.Vz = x_hat(6 - 1);
+			sv.r = x_hat(7 - 1);
 
 			pub.publish(sv);
 		}
 	}
+	plik.close();
 	return 0;
 }
 
@@ -181,12 +191,12 @@ void InitMatrixes()
 	R(2, 2) = (THETA_3 ^ 2);
 
 	P.fill(0);
-	P(1 - 1, 1 - 1) = 25;
-	P(2 - 1, 2 - 1) = 25;
-	P(3 - 1, 3 - 1) = 25;
-	P(4 - 1, 4 - 1) = 100;
-	P(5 - 1, 5 - 1) = 100;
-	P(6 - 1, 6 - 1) = 100;
+	P(1 - 1, 1 - 1) = 2;
+	P(2 - 1, 2 - 1) = 2;
+	P(3 - 1, 3 - 1) = 2;
+	P(4 - 1, 4 - 1) = 10;
+	P(5 - 1, 5 - 1) = 10;
+	P(6 - 1, 6 - 1) = 10;
 	P(7 - 1, 7 - 1) = (double)1 / 20;
 }
 
@@ -214,14 +224,16 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
 	std::cout << "Calculating C from: " << x_d << y_d << z_d << x << y << z << r;
 #endif // DEBUG
 
-	C_n(1 - 1, 1 - 1) = (double)(RAD_TO_X * (y - y_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
-	C_n(1 - 1, 2 - 1) = (double)-(RAD_TO_X * (x - x_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
-	C_n(2 - 1, 1 - 1) = (double)(RAD_TO_Y * (2 * x - 2 * x_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)) + 0.001);
-	C_n(2 - 1, 2 - 1) = (double)(RAD_TO_Y * (2 * y - 2 * y_d) * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)) * abs(z - z_d)) / ((2 * pow(x - x_d, 2) + 2 * pow(y - y_d, 2)) * (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2)) + 0.001);
-	C_n(2 - 1, 3 - 1) = (double)-(RAD_TO_Y * sqrt(pow(x - x_d, 2) + pow(y - y_d, 2))) / (pow(x - x_d, 2) + pow(y - y_d, 2) + pow(z - z_d, 2) + 0.001);
+	C_n(1 - 1, 1 - 1) = (double)-(RAD_TO_X * (y - y_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
+	C_n(1 - 1, 2 - 1) = (double)(RAD_TO_X * (x - x_d)) / ((pow(x - x_d, 2) + pow(y - y_d, 2)) + 0.001);
+
+	C_n(2 - 1, 1 - 1) = (double)-(RAD_TO_Y * (2 * x - 2 * x_d) / (-2 * ((pow(pow(x - x_d, 2) + pow(y - y_d, 2), 0.25) + pow(z - z_d, 2)) * ((z - z_d) * pow(pow(x - x_d, 2) + pow(y - y_d, 2), 0.5)))));
+	C_n(2 - 1, 2 - 1) = (double)-(RAD_TO_Y * (2 * y - 2 * y_d) / (-2 * ((pow(pow(x - x_d, 2) + pow(y - y_d, 2), 0.25) + pow(z - z_d, 2)) * ((z - z_d) * pow(pow(x - x_d, 2) + pow(y - y_d, 2), 0.5)))));
+	C_n(2 - 1, 3 - 1) = (double)(RAD_TO_Y * (sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)))) / ((pow(sqrt(pow(x - x_d, 2) + pow(y - y_d, 2)), 2) + pow(z - z_d, 2)));
+
 	C_n(3 - 1, 1 - 1) = (double)-(RAD_TO_X * r * (2 * x - 2 * x_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
 	C_n(3 - 1, 2 - 1) = (double)-(RAD_TO_X * r * (2 * y - 2 * y_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
-	C_n(3 - 1, 7 - 1) = (double)RAD_TO_X / pow((pow(x - x_d, 2) + pow(y - y_d, 2)), (1 / 2));
+	C_n(3 - 1, 7 - 1) = (double)(RAD_TO_X / sqrt((pow(x - x_d, 2) + pow(y - y_d, 2))));
 
 #ifdef DEBUG
 	std::cout << C_n << std::endl

@@ -23,9 +23,9 @@
 
 /*---- KALMAN PREDICTIONS ----*/
 #define DELTA_V                 10                           // Acceptable change of speed in 1s (accel m/s^2)
-#define THETA_1                 1                            // Error of measurement for ALPHA_XY (deg)
-#define THETA_2                 1                            // Error of measurement for ALPHA_Z (deg)
-#define THETA_3                 1                            // Error of measurement for DELTA_ALPHA (deg)
+#define THETA_1                 10                            // Error of measurement for ALPHA_XY (deg)
+#define THETA_2                 10                            // Error of measurement for ALPHA_Z (deg)
+#define THETA_3                 10                            // Error of measurement for DELTA_ALPHA (deg)
 #define DEFAULT_DRONE_SIZE      0.5                          // Default size of drone in meters
 
 //! Do not edit automatic calculated section

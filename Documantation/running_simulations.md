@@ -5,11 +5,14 @@ Inspired by [Inteligent Quads](https://github.com/Intelligent-Quads).
 
 ## Table of Contents
 Running roslaunch files
+- [Running roslaunch files (simulation and programs at once)](#running-roslaunch-files-simulation-and-programs-at-once)
+  - [Table of Contents](#table-of-contents)
   - [Prerequisites](#prerequisites)
   - [Dependencies (empty worksapce)](#dependencies-empty-worksapce)
   - [Installing DVC](#installing-dvc)
   - [Running program and simulation](#running-program-and-simulation)
   - [Starting mission](#starting-mission)
+  - [Debuging](#debuging)
 
 ## Prerequisites
 
@@ -129,3 +132,7 @@ mode GUIDED
 ```
 Which will tell software in the loop to start mission. Then by chaging position of prey our drone shall follow it.
 
+## Debuging
+
+To debug you will need to add flag: ```-DCMAKE_BUILD_TYPE=RelWithDebInfo```.
+Also add ```#define DEBUG``` in configuration file so that you will get more useful information.
