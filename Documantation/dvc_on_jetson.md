@@ -20,7 +20,9 @@ Jetson runs in range from 9V to 19V and gets maximum current of 5A while on 9V.
 
 ## Setup Jetson 
 
-
+1. Download Etcher: https://www.balena.io/etcher#download-etcher
+2. Upload your chosen image 
+3. Boot and configure
 
 ## Setting up Ardupilot on Pixhawk
 
