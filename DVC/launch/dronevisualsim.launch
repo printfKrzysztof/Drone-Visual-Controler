@@ -9,11 +9,11 @@
         <param name="use_sim_time" value="true" />
     </node>
 
-    <!-- NODE THAT ANALIZES DATA 
+    <!-- NODE THAT ANALIZES DATA -->
     <node pkg="dvc" type="filtration" name="filtration" output="screen" ns="/predator">
         <param name="namespace" value="/predator"/>
         <param name="use_sim_time" value="false" />
-    </node> -->
+    </node> 
 
     <!-- SIMULATOR BY IQ -->
     <include file="$(find iq_sim)/launch/runway.launch"/>

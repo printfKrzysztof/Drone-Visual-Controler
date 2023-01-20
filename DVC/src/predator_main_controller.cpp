@@ -16,6 +16,7 @@
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
+#include <config.h>
 
 extern uint8_t flags;
 gnc_api_waypoint WayPoint;
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
     ros::Subscriber sub2 = gnc_node.subscribe("/Pilot", 1, pilot_cb);
     ros::Publisher pub_to_pilot = gnc_node.advertise<std_msgs::String>("/predator/ToPilot", 1);
 
-    ros::Rate rate(4.0);
+    ros::Rate rate(REFRESH_RATE);
     int counter = 0;
     while (ros::ok())
     {

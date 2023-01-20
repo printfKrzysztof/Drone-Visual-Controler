@@ -12,7 +12,7 @@
 #define CONFIG_HEADER
 
 /*---- SOFTWARE ----*/
-#define REFRESH_RATE            5                            // The framerate at which yolo analizes data (Hz)
+#define REFRESH_RATE            15                            // The framerate at which yolo analizes data (Hz)
 //#define DEBUG                                              // Debug program - gives more information about matrixes
 
 /*---- CAMERA ----*/

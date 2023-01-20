@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <std_msgs/Char.h>
 #include <std_msgs/String.h>
+#include <config.h>
 
 #define KEYCODE_R 0x43
 #define KEYCODE_L 0x44
@@ -90,7 +91,7 @@ void Pilot::keyLoop(ros::NodeHandle *nh)
     raw.c_cc[VMIN] = 0;
     tcsetattr(kfd, TCSANOW, &raw);
 
-    ros::Rate rate(4.0);
+    ros::Rate rate(REFRESH_RATE);
     ros::Timer timer = nh->createTimer(ros::Duration(0.1), &Pilot::timer_cb, this);
     timer.stop();
     while (ros::ok())

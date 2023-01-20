@@ -66,19 +66,14 @@ public:
    * @param R_in
    * @param P_in
    */
-  void init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &F_in,
+  void init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
             const Eigen::MatrixXd &C_in,
             const Eigen::MatrixXd &Q_in,
             const Eigen::MatrixXd &R_in,
             const Eigen::MatrixXd &P_in);
 
   void predict();
-  /**
-   * Update the estimated state based on measured values. The
-   * time step is assumed to remain constant.
-   */
-  void update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new);
-
+ 
   /**
    * Update the estimated state based on measured values,
    * using the given time step and dynamics matrix.
@@ -93,16 +88,13 @@ public:
 
 private:
   // Matrices for computation
-  Eigen::MatrixXd F, C, Q, R, P, K, P0;
+  Eigen::MatrixXd A, C, Q, R, P, K, F, P0;
 
   // System dimensions
   int m, n;
 
   // Initial and current time
   double t0, t;
-
-  // Discrete time step
-  double dt;
 
   // Is the filter initialized?
   bool initialized;
@@ -112,4 +104,14 @@ private:
 
   // Estimated states
   Eigen::VectorXd x_hat, x_hat_new;
+
+  // Setting limits for state vecot
+  void limit();
+
+   /**
+   * Update the estimated state based on measured values. The
+   * time step is assumed to remain constant.
+   */
+  void update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new);
+
 };

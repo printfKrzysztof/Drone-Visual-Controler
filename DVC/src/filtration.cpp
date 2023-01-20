@@ -17,10 +17,19 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <time.h>
+#include <chrono>
+#include <sys/time.h>
+#include <ctime>
+
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::system_clock;
 
 std::fstream plik;
 /*
- * We want to know 7 states:
+ * We want to know 7 states:`
  * Position in x    x
  * Position in y    y
  * Position in z    z
@@ -50,8 +59,10 @@ geometry_msgs::Point a3dp; // point gettind data from drone
 int n = 7;						// Number of states
 int m = 3;						// Number of measurements
 double dt = 1.0 / REFRESH_RATE; // Time step
+int new_time = 0;
+int old_time = 0;
 
-Eigen::MatrixXd F(n, n); // System dynamics matrix
+Eigen::MatrixXd A(n, n); // System dynamics matrix
 Eigen::MatrixXd C(m, n); // Output matrix
 Eigen::MatrixXd Q(n, n); // Process noise covariance
 Eigen::MatrixXd R(m, m); // Measurement noise covariance
@@ -60,8 +71,9 @@ Eigen::MatrixXd P(n, n); // Estimate error covariance
 Eigen::VectorXd x_hat(n); // state vector
 Eigen::VectorXd y_hat(m); // meassurements vector
 
-KalmanFilter ekf(0, F, C, Q, R, P);
+KalmanFilter ekf(0, A, C, Q, R, P);
 void InitMatrixes();
+void UpdateTime();
 Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X);
 Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X);
 
@@ -83,11 +95,14 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 	}
 	if (ekf.isInit())
 	{
-		ROS_INFO("UPDATE");
+		// ROS_INFO("UPDATE");
 		x_hat = ekf.state();
 		plik << x_hat(0) << "," << x_hat(1) << "," << x_hat(2) << ";";
 		C = CalculateCfromX(x_hat);
+		UpdateTime();
 		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
+		// ROS_INFO("PREDICT");
+		ekf.predict();
 	}
 	else
 	{
@@ -101,7 +116,9 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		x_hat(6 - 1) = 0;
 		x_hat(7 - 1) = 0.4;
 		C = CalculateCfromX(x_hat);
-		ekf.init(x_hat, F, C, Q, R, P);
+		new_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+		ekf.init(x_hat, A, C, Q, R, P);
+
 		/*
 		std::cout << F << std::endl
 				  << C << std::endl;
@@ -111,6 +128,7 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		<< x_hat << std::endl
 		<< y_hat << std::endl;
 		*/
+		UpdateTime();
 		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
 	}
 }
@@ -132,15 +150,14 @@ int main(int argc, char **argv)
 		filtration.getParam("namespace", ros_ns);
 	}
 	InitMatrixes();
- 
 	plik.open("/home/printfkrzysztof/pose.txt", std::fstream::in | std::fstream::out | std::fstream::app);
-	if(plik.good() == true)
+	if (plik.good() == true)
 	{
 		std::cout << "Poprawnie otwarty plik";
 	}
 	ros::Publisher pub = filtration.advertise<dvc_msgs::StatesVector>((ros_ns + "/filtration/StatesVector").c_str(), 1);
 	ros::Subscriber sub = filtration.subscribe("/darknet_ros/bounding_boxes", 1, yolo_callback);
-	ros::Rate rate(5);
+	ros::Rate rate(REFRESH_RATE);
 	while (ros::ok())
 	{
 		ros::spinOnce();
@@ -169,13 +186,10 @@ int main(int argc, char **argv)
 
 void InitMatrixes()
 {
-	F.fill(0);
-	F(3, 0) = 1;
-	F(4, 1) = 1;
-	F(5, 2) = 1;
-
-	Eigen::MatrixXd I(n, n); // Identity
-	F = I.Identity(n, n) + F * dt;
+	A.fill(0);
+	A(3, 0) = 1;
+	A(4, 1) = 1;
+	A(5, 2) = 1;
 
 	C.fill(0);
 	// C() // ADD INITIALIZED VALUES
@@ -277,4 +291,11 @@ Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X)
 #endif // DEBUG
 
 	return Y;
+}
+
+void UpdateTime()
+{
+	old_time = new_time;
+	new_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+	dt = new_time - old_time;
 }

@@ -11,22 +11,22 @@
 #include "kalman.hpp"
 
 KalmanFilter::KalmanFilter(
-    double dt,
-    const Eigen::MatrixXd &F,
+    double t0,
+    const Eigen::MatrixXd &A,
     const Eigen::MatrixXd &C,
     const Eigen::MatrixXd &Q,
     const Eigen::MatrixXd &R,
     const Eigen::MatrixXd &P)
-    : F(F), C(C), Q(Q), R(R), P0(P),
-      m(C.rows()), n(F.rows()), dt(dt), initialized(false),
-      I(n, n), x_hat(n), x_hat_new(n)
+    : A(A), C(C), Q(Q), R(R), P0(P),
+      m(C.rows()), n(A.rows()), t0(t0), initialized(false),
+      I(n, n), x_hat(n), x_hat_new(n), F(n, n)
 {
   I.setIdentity();
 }
 
 KalmanFilter::KalmanFilter() {}
 
-void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &F_in,
+void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
                         const Eigen::MatrixXd &C_in,
                         const Eigen::MatrixXd &Q_in,
                         const Eigen::MatrixXd &R_in,
@@ -34,20 +34,11 @@ void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &F_in,
 {
   x_hat = x0;
   P = P0;
-  F = F_in;
+  A = A_in;
   C = C_in;
   Q = Q_in;
   R = R_in;
   P = P_in;
-  initialized = true;
-}
-
-void KalmanFilter::init()
-{
-  x_hat.setZero();
-  P = P0;
-  t0 = 0;
-  t = t0;
   initialized = true;
 }
 
@@ -67,33 +58,12 @@ void KalmanFilter::predict()
               << "X" << x_hat << std::endl;
 
 #endif // DEBUG
+
     x_hat = F * x_hat;
-
-    if (x_hat(3 - 1) < 0.1)
-      x_hat(3 - 1) = 0.1; // limit for Z
-
-    if (x_hat(7 - 1) < 0.1)
-      x_hat(7 - 1) = 0.1; // limit for r
-
-    if (x_hat(7 - 1) > 1)
-      x_hat(7 - 1) = 1; // limit for r
-
-    if (x_hat(4 - 1) < -30)
-      x_hat(4 - 1) = -30; // limit for V
-    if (x_hat(4 - 1) > 30)
-      x_hat(4 - 1) = 30; // limit for V
-    if (x_hat(5 - 1) < -30)
-      x_hat(5 - 1) = -30; // limit for V
-    if (x_hat(5 - 1) > 30)
-      x_hat(5 - 1) = 30; // limit for V
-    if (x_hat(6 - 1) < -30)
-      x_hat(6 - 1) = -30; // limit for V
-    if (x_hat(6 - 1) > 30)
-      x_hat(6 - 1) = 30; // limit for V
     //  Update the covariance matrix using the process noise and state transition matrix
     P = F * P * F.transpose() + Q;
-#ifdef DEBUG
 
+#ifdef DEBUG
     std::cout << "After PREDICTION" << std::endl
               << "P" << P << std::endl
               << "X" << x_hat << std::endl;
@@ -125,28 +95,6 @@ void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &
     x_hat = x_hat_new;                                             // Applying new value to x vector
     P = (I - K * C) * P;                                           // Calculating new P matrix
 
-    if (x_hat(3 - 1) < 0.1)
-      x_hat(3 - 1) = 0.1; // limit for Z
-
-    if (x_hat(7 - 1) < 0.1)
-      x_hat(7 - 1) = 0.1; // limit for r
-
-    if (x_hat(7 - 1) > 1)
-      x_hat(7 - 1) = 1; // limit for r
-
-    if (x_hat(4 - 1) < -30)
-      x_hat(4 - 1) = -30; // limit for V
-    if (x_hat(4 - 1) > 30)
-      x_hat(4 - 1) = 30; // limit for V
-    if (x_hat(5 - 1) < -30)
-      x_hat(5 - 1) = -30; // limit for V
-    if (x_hat(5 - 1) > 30)
-      x_hat(5 - 1) = 30; // limit for V
-    if (x_hat(6 - 1) < -30)
-      x_hat(6 - 1) = -30; // limit for V
-    if (x_hat(6 - 1) > 30)
-      x_hat(6 - 1) = 30; // limit for V
-
 #ifdef DEBUG
 
     std::cout << "After UPDATE" << std::endl
@@ -164,11 +112,42 @@ void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &
 
 void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, double dt, const Eigen::MatrixXd &C_new)
 {
-  this->dt += dt; // Adding time so we can track it easier
+  this->t += dt;                                   // Adding time so we can track it easier
+  this->F = this->I.Identity(n, n) + this->A * dt; // Update F matrix
   update(y_real, y_guess, C_new);
 }
 
 bool KalmanFilter::isInit(void)
 {
   return initialized;
+}
+
+void KalmanFilter::limit()
+{
+  if (x_hat(3 - 1) < 0.1)
+    x_hat(3 - 1) = 0.1; // limit for Z
+
+  if (x_hat(7 - 1) < 0.1)
+    x_hat(7 - 1) = 0.1; // limit for r
+
+  if (x_hat(7 - 1) > 1)
+    x_hat(7 - 1) = 1; // limit for r
+
+  if (x_hat(4 - 1) < -30)
+    x_hat(4 - 1) = -30; // limit for Vx
+
+  if (x_hat(4 - 1) > 30)
+    x_hat(4 - 1) = 30; // limit for Vx
+
+  if (x_hat(5 - 1) < -30)
+    x_hat(5 - 1) = -30; // limit for Vy
+
+  if (x_hat(5 - 1) > 30)
+    x_hat(5 - 1) = 30; // limit for Vy
+
+  if (x_hat(6 - 1) < -30)
+    x_hat(6 - 1) = -30; // limit for Vz
+
+  if (x_hat(6 - 1) > 30)
+    x_hat(6 - 1) = 30; // limit for Vz
 }
