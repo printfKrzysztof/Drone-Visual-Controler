@@ -5,6 +5,7 @@
   - [Setup Jetson](#setup-jetson)
   - [Installing Warpinator](#installing-warpinator)
   - [Setting up Ardupilot on Pixhawk](#setting-up-ardupilot-on-pixhawk)
+  - [Usefull commands and tips:](#usefull-commands-and-tips)
 
 ## R/W data on SD card
 
@@ -49,19 +50,12 @@ Jetson runs in range from 9V to 19V and gets maximum current of 5A while on 9V.
   
   Replace your darknet folder with cloned from: https://github.com/AlexeyAB/darknet
   
-  Then in makefile of darknet change parameters to: 
-  ```
-  GPU=1
-  CUDNN=1
-  OPENCV=1
-  ```
-  And go ahead: ```make```.
 
   Assuming you named your datasets obj like i did: move all weights and use them with command:
   ```
   ./darknet detector demo cfg/obj.data cfg/obj.cfg obj.weights "nvarguscamerasrc auto-exposure=1 ! video/x-raw(memory:NVMM), width=(int)1280, height=(int)720, format=(string)NV12, framerate=(fraction)60/1 ! nvvidconv flip-method=0 ! video/x-raw, width=(int)1280, height=(int)720, format=(string)BGRx ! videoconvert ! video/x-raw, format=(string)BGR ! appsink -e"
   ```
-
+  If it works it means yolo is running just fine 
 ## Installing Warpinator
 First, use the given command to install some prerequisite dependencies:
 ```
@@ -100,6 +94,8 @@ Press y and then enter when it asks for your confirmation.
 
 ## Setting up Ardupilot on Pixhawk
 
+**WARNING!** This cannot be done on Jetson itself as qGroundStation is not supporting architecture.
+
 Open qGroundStation 
 ```
 ./QGroundControl.AppImage
@@ -110,3 +106,17 @@ Once you are in this window go ahead and replag the px.
 
 Default configuration shall be fine :) 
 
+## Usefull commands and tips:
+
+To dryrun your mavroxy:
+```
+sudo mavproxy.py --master=/dev/ttyTHS0
+```
+If it works and ros does not it may be coused by serial permissions:
+```
+sudo chmod 777 /dev/ttyTHS0
+```
+To make sure everything is working okay type:
+```
+roslaunch mavros px4.launch
+```

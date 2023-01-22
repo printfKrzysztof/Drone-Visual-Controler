@@ -1,0 +1,36 @@
+<!-- DRONE VISUAL CONTROLLER    -->
+<!-- KRZYSZTOF BORTNOWSKI       -->
+<!-- Launchfile that inclueds all nodes and params needed for DVC project -->
+<launch>
+
+    <!-- MAIN CONTROLLER NODE -->
+    <node pkg="dvc" type="predator_main_controller" name="predator_main_controller" output="screen" ns="/predator">
+        <param name="namespace" value="/predator"/>
+        <param name="use_sim_time" value="true" />
+    </node>
+
+    <!-- NODE THAT ANALIZES DATA -->
+    <node pkg="dvc" type="filtration" name="filtration" output="screen" ns="/predator">
+        <param name="namespace" value="/predator"/>
+        <param name="use_sim_time" value="false" />
+    </node> 
+
+
+    <!-- YOLO BY DARKNET -->
+    <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+
+    <!-- MAIN MAVROS NODE -->
+    <include file="$(find iq_sim)/launch/mavros_node.launch">
+        <arg name="pluginlists_yaml" value="$(find mavros)/launch/apm_pluginlists.yaml" />
+        <arg name="config_yaml" value="$(find mavros)/launch/apm_config.yaml" />
+        <arg name="mavros_ns" value="predator"/>
+        <arg name="fcu_url" value="/dev/ttyTHS0" />
+        <arg name="gcs_url" value="" />
+        <arg name="respawn_mavros" value="true"/>
+        <arg name="tgt_system" value="1)" />
+        <arg name="tgt_component" value="1" />
+        <arg name="log_output" value="screen" />
+    </include>
+
+
+</launch>
