@@ -13,7 +13,7 @@
 
 /*---- SOFTWARE ----*/
 #define REFRESH_RATE            15                            // The framerate at which yolo analizes data (Hz)
-//#define DEBUG                                              // Debug program - gives more information about matrixes
+#define DEBUG                                                 // Debug program - gives more information about matrixes
 
 /*---- CAMERA ----*/
 #define CAMERA_HORIZONTAL_ANGLE 140                          // Horizontalal degrees of lens
@@ -23,9 +23,9 @@
 
 /*---- KALMAN PREDICTIONS ----*/
 #define DELTA_V                 10                           // Acceptable change of speed in 1s (accel m/s^2)
-#define THETA_1                 10                            // Error of measurement for ALPHA_XY (deg)
-#define THETA_2                 10                            // Error of measurement for ALPHA_Z (deg)
-#define THETA_3                 10                            // Error of measurement for DELTA_ALPHA (deg)
+#define THETA_1                 5                            // Error of measurement for ALPHA_XY (pixels)
+#define THETA_2                 5                            // Error of measurement for ALPHA_Z (pixels)
+#define THETA_3                 5                            // Error of measurement for DELTA_ALPHA (pixels)
 #define DEFAULT_DRONE_SIZE      0.5                          // Default size of drone in meters
 
 //! Do not edit automatic calculated section

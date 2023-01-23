@@ -42,8 +42,9 @@ void KalmanFilter::init(const Eigen::VectorXd &x0, const Eigen::MatrixXd &A_in,
   initialized = true;
 }
 
-void KalmanFilter::predict()
+void KalmanFilter::predict(double dt)
 {
+
   // no need to calculate new matrix F as this is linear solution
   if (!initialized)
   {
@@ -59,7 +60,10 @@ void KalmanFilter::predict()
 
 #endif // DEBUG
 
+    this->t += dt;                                   // Adding time so we can track it easier
+    this->F = this->I.Identity(n, n) + this->A * dt; // Update F matrix
     x_hat = F * x_hat;
+    limit();
     //  Update the covariance matrix using the process noise and state transition matrix
     P = F * P * F.transpose() + Q;
 
@@ -110,12 +114,6 @@ void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &
   }
 }
 
-void KalmanFilter::update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, double dt, const Eigen::MatrixXd &C_new)
-{
-  this->t += dt;                                   // Adding time so we can track it easier
-  this->F = this->I.Identity(n, n) + this->A * dt; // Update F matrix
-  update(y_real, y_guess, C_new);
-}
 
 bool KalmanFilter::isInit(void)
 {

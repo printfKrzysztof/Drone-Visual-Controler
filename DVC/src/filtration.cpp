@@ -56,9 +56,9 @@ std::fstream plik;
 
 geometry_msgs::Point a3dp; // point gettind data from drone
 
-int n = 7;						// Number of states
-int m = 3;						// Number of measurements
-double dt = 1.0 / REFRESH_RATE; // Time step
+int n = 6;						   // Number of states
+int m = 3;						   // Number of measurements
+double dt = 1.0000 / REFRESH_RATE; // Time step
 int new_time = 0;
 int old_time = 0;
 
@@ -86,23 +86,25 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 	{
 		int centre_x = (int)(bounding_box_auto.xmax + bounding_box_auto.xmin) / 2;
 		int centre_y = (int)(bounding_box_auto.ymax + bounding_box_auto.ymin) / 2;
-		// 271 -> 0,5 pi rad (90 deg)
-
 		int size = abs(bounding_box_auto.xmax - bounding_box_auto.xmin);
-		y_hat(1 - 1) = centre_x;
-		y_hat(2 - 1) = centre_y;
+
+		y_hat(1 - 1) = centre_x - MIDDLE_X;
+		y_hat(2 - 1) = MIDDLE_Y - centre_y;
 		y_hat(3 - 1) = size;
 	}
 	if (ekf.isInit())
 	{
 		// ROS_INFO("UPDATE");
+
 		x_hat = ekf.state();
-		plik << x_hat(0) << "," << x_hat(1) << "," << x_hat(2) << ";";
 		C = CalculateCfromX(x_hat);
+		plik << x_hat(0) << "," << x_hat(1) << "," << x_hat(2) << "," << dt << ";\n";
+		ekf.update(y_hat, GuessYfromX(x_hat), C);
 		UpdateTime();
-		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
-		// ROS_INFO("PREDICT");
-		ekf.predict();
+		ekf.predict(dt);
+		// std::cout << "Values we recived in pixels: " << y_hat << "\n";
+		// std::cout << "Values we expected to see:   " << GuessYfromX(x_hat) << "\n";
+		//  ROS_INFO("PREDICT");
 	}
 	else
 	{
@@ -114,9 +116,8 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		x_hat(4 - 1) = 0;
 		x_hat(5 - 1) = 0;
 		x_hat(6 - 1) = 0;
-		x_hat(7 - 1) = 0.4;
+		// x_hat(7 - 1) = 0.4;
 		C = CalculateCfromX(x_hat);
-		new_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 		ekf.init(x_hat, A, C, Q, R, P);
 
 		/*
@@ -129,7 +130,10 @@ void yolo_callback(const darknet_ros_msgs::BoundingBoxes::ConstPtr &msg)
 		<< y_hat << std::endl;
 		*/
 		UpdateTime();
-		ekf.update(y_hat, GuessYfromX(x_hat), dt, C);
+		dt = 0;
+		plik << x_hat(0) << "," << x_hat(1) << "," << x_hat(2) << "," << dt << ";\n";
+		new_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+		ekf.predict(dt);
 	}
 }
 int main(int argc, char **argv)
@@ -162,11 +166,9 @@ int main(int argc, char **argv)
 	{
 		ros::spinOnce();
 		rate.sleep();
-		// ROS_INFO("WE ARE IN MAIN: %f", dt);
 		if (ekf.isInit())
 		{
-			ROS_INFO("PREDICT");
-			ekf.predict();
+
 			x_hat = ekf.state();
 
 			sv.x = x_hat(1 - 1);
@@ -175,7 +177,7 @@ int main(int argc, char **argv)
 			sv.Vx = x_hat(4 - 1);
 			sv.Vy = x_hat(5 - 1);
 			sv.Vz = x_hat(6 - 1);
-			sv.r = x_hat(7 - 1);
+			// sv.r = x_hat(7 - 1);
 
 			pub.publish(sv);
 		}
@@ -187,9 +189,9 @@ int main(int argc, char **argv)
 void InitMatrixes()
 {
 	A.fill(0);
-	A(3, 0) = 1;
-	A(4, 1) = 1;
-	A(5, 2) = 1;
+	A(0, 3) = 1;
+	A(1, 4) = 1;
+	A(2, 5) = 1;
 
 	C.fill(0);
 	// C() // ADD INITIALIZED VALUES
@@ -197,7 +199,7 @@ void InitMatrixes()
 	Q(3, 3) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
 	Q(4, 4) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
 	Q(5, 5) = (double)(DELTA_V ^ 2) / ((REFRESH_RATE ^ 2));
-	Q(6, 6) = (double)1 / 100000;
+	// Q(6, 6) = (double)1 / 100000;
 
 	R.fill(0);
 	R(0, 0) = (THETA_1 ^ 2);
@@ -211,7 +213,7 @@ void InitMatrixes()
 	P(4 - 1, 4 - 1) = 10;
 	P(5 - 1, 5 - 1) = 10;
 	P(6 - 1, 6 - 1) = 10;
-	P(7 - 1, 7 - 1) = (double)1 / 20;
+	// P(7 - 1, 7 - 1) = (double)1 / 20;
 }
 
 Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
@@ -226,14 +228,16 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
 	double x = X(1 - 1);
 	double y = X(2 - 1);
 	double z = X(3 - 1);
-	double r = X(7 - 1);
+	// double r = X(7 - 1);
 	if (z < 0)
 		z = 0;
-	if (r < 0.1)
-		r = 0.1;
-	if (r > 1)
-		r = 1;
-
+	/*
+if (r < 0.1)
+	r = 0.1;
+if (r > 1)
+	r = 1;
+*/
+	double r = 0.4;
 #ifdef DEBUG
 	std::cout << "Calculating C from: " << x_d << y_d << z_d << x << y << z << r;
 #endif // DEBUG
@@ -247,8 +251,13 @@ Eigen::MatrixXd CalculateCfromX(Eigen::VectorXd &X)
 
 	C_n(3 - 1, 1 - 1) = (double)-(RAD_TO_X * r * (2 * x - 2 * x_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
 	C_n(3 - 1, 2 - 1) = (double)-(RAD_TO_X * r * (2 * y - 2 * y_d)) / (pow(2 * (pow(x - x_d, 2) + pow(y - y_d, 2)), (3 / 2)) + 0.001);
-	C_n(3 - 1, 7 - 1) = (double)(RAD_TO_X / sqrt((pow(x - x_d, 2) + pow(y - y_d, 2))));
+	// C_n(3 - 1, 7 - 1) = (double)(RAD_TO_X / sqrt((pow(x - x_d, 2) + pow(y - y_d, 2))));
 
+	if (C_n(2 - 1, 1 - 1) == INFINITY || C_n(2 - 1, 1 - 1) == -INFINITY)
+	{
+		C_n(2 - 1, 1 - 1) = 1;
+		C_n(2 - 1, 2 - 1) = 1;
+	}
 #ifdef DEBUG
 	std::cout << C_n << std::endl
 			  << "That is calculated C";
@@ -269,14 +278,16 @@ Eigen::VectorXd GuessYfromX(Eigen::VectorXd &X)
 	float x = X(1 - 1);
 	float y = X(2 - 1);
 	float z = X(3 - 1);
-	float r = X(7 - 1);
+	// float r = X(7 - 1);
+	double r = 0.4;
 	if (z < 0)
-		z = 0;
+		z = 0.1;
+		/*
 	if (r < 0.1)
 		r = 0.1;
 	if (r > 1)
 		r = 1;
-
+*/
 #ifdef DEBUG
 	std::cout << "Calculating Y from: " << x_d << y_d << z_d << x << y << z << r << phi_d;
 #endif // DEBUG
@@ -297,5 +308,7 @@ void UpdateTime()
 {
 	old_time = new_time;
 	new_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-	dt = new_time - old_time;
+	dt = (double)(new_time - old_time) / 1000;
+	if (dt == 0)
+		dt = 0.00001;
 }

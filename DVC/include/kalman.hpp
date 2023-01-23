@@ -72,14 +72,13 @@ public:
             const Eigen::MatrixXd &R_in,
             const Eigen::MatrixXd &P_in);
 
-  void predict();
+  void predict(double dt);
  
-  /**
-   * Update the estimated state based on measured values,
-   * using the given time step and dynamics matrix.
+   /**
+   * Update the estimated state based on measured values. The
+   * time step is assumed to remain constant.
    */
-  void update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, double dt, const Eigen::MatrixXd &C_new);
-
+  void update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new);
   /**
    * Return the current state and time.
    */
@@ -108,10 +107,5 @@ private:
   // Setting limits for state vecot
   void limit();
 
-   /**
-   * Update the estimated state based on measured values. The
-   * time step is assumed to remain constant.
-   */
-  void update(const Eigen::VectorXd &y_real, const Eigen::VectorXd &y_guess, const Eigen::MatrixXd &C_new);
 
 };
